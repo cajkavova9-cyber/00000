@@ -25,13 +25,15 @@ jobs:
       - name: Install desktop build dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install PySide6 PySide6-Addons Pillow playwright pyinstaller pytest
+          python -m pip install PySide6 PySide6-Addons Pillow playwright pyinstaller pytest beautifulsoup4
       - name: Package browser required for Facy AI
         run: |
           export PLAYWRIGHT_BROWSERS_PATH="$GITHUB_WORKSPACE/native_browsers"
           python -m playwright install chromium
       - name: Run backend tests
         working-directory: PhotoStudio
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/native_browsers
         run: python -m pytest tests -q
       - name: Build real Photo Studio.app and DMG
         run: python packaging/build.py
@@ -55,7 +57,7 @@ jobs:
         shell: pwsh
         run: |
           python -m pip install --upgrade pip
-          python -m pip install PySide6 PySide6-Addons Pillow playwright pyinstaller pytest
+          python -m pip install PySide6 PySide6-Addons Pillow playwright pyinstaller pytest beautifulsoup4
       - name: Package browser required for Facy AI
         shell: pwsh
         run: |
@@ -63,6 +65,8 @@ jobs:
           python -m playwright install chromium
       - name: Run backend tests
         working-directory: PhotoStudio
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/native_browsers
         run: python -m pytest tests -q
       - name: Build Photo Studio.exe
         run: python packaging/build.py
