@@ -1,3 +1,35 @@
+name: Photo Studio — Apple Silicon native build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/native-release.yml'
+
+permissions:
+  contents: read
+
+env:
+  PYTHONUTF8: '1'
+
+jobs:
+  macos-apple-silicon:
+    name: macOS Apple Silicon (arm64)
+    runs-on: macos-14
+    timeout-minutes: 55
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Assert Apple Silicon runner
+        shell: bash
+        run: |
+          uname -m
           test "$(uname -m)" = arm64
           python -c "import platform; assert platform.machine() == 'arm64'"
 
@@ -62,52 +94,3 @@
           f = Path('PhotoStudio/native_main.py')
           source = f.read_text(encoding='utf-8')
           old_browser = "Path(getattr(sys, '_MEIPASS', ROOT)) / 'ms-playwright'"
-          assert source.count(old_browser) == 2, 'Unexpected frozen-browser references'
-          new_browser = (
-              "(Path(sys.executable).parent.parent / 'Resources' / 'ms-playwright' "
-              "if sys.platform == 'darwin' else "
-              "Path(getattr(sys, '_MEIPASS', ROOT)) / 'ms-playwright')"
-          )
-          source = source.replace(old_browser, new_browser)
-          test_line = (
-              "assert browser_bundle.is_dir() and any(browser_bundle.glob('chromium-*')), "
-              "'Missing bundled Chromium'"
-          )
-          assert source.count(test_line) == 1, 'Unexpected self-test layout'
-          source = source.replace(
-              test_line,
-              test_line
-              + "\n        os.environ['PLAYWRIGHT_BROWSERS_PATH'] = str(browser_bundle)"
-              + "\n        with sync_playwright() as p:"
-              + "\n            browser = p.chromium.launch(headless=True)"
-              + "\n            browser.close()"
-          )
-          f.write_text(source, encoding='utf-8')
-
-          compile(build, 'packaging/build.py', 'exec')
-          compile(source, 'PhotoStudio/native_main.py', 'exec')
-          print('App and build script syntax validated')
-          PY
-
-      - name: Build Photo Studio.app and DMG
-        shell: bash
-        run: python packaging/build.py
-
-      - name: Self-test frozen app and signed browser
-        shell: bash
-        run: |
-          APP='PhotoStudio/dist/PhotoStudio.app'
-          test -d "$APP"
-          test -x "$APP/Contents/MacOS/PhotoStudio"
-          test -d "$APP/Contents/Resources/ms-playwright"
-          "$APP/Contents/MacOS/PhotoStudio" --self-test
-          codesign --verify --deep --verbose=2 "$APP"
-          test -s artifacts/PhotoStudio-macOS.dmg
-
-      - name: Upload Apple Silicon DMG
-        uses: actions/upload-artifact@v4
-        with:
-          name: PhotoStudio-macOS-AppleSilicon-DMG
-          path: artifacts/PhotoStudio-macOS.dmg
-          if-no-files-found: error
-          retention-days: 14
