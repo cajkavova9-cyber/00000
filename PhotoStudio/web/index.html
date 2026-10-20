@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+
+<html lang="ru"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><meta content="dark" name="color-scheme"/><meta content="Photo Studio — локальное приложение для обработки изображений." name="description"/><title>Photo Studio — HyperMotion</title><style>:root{color-scheme:dark;--bg:#060816;--bg2:#0c1021;--panel:#11162c;--panel2:#161c36;--line:#ffffff1c;--line2:#ffffff30;--text:#f3f6ff;--muted:#aab4d2;--dim:#7481a6;--purple:#a67bff;--pink:#ff65bf;--cyan:#45c4ff;--mint:#43edca;--gold:#ffc36b;--danger:#ff6d91;--accent:#a67bff;--accent-rgb:166,123,255;--duration:300ms;--glow:1;--shadow:0 18px 80px #0005;--radius:22px}*{box-sizing:border-box}html{scroll-behavior:auto}body{margin:0;font:14px/1.5 Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--text);background:radial-gradient(ellipse 80vw 50vw at 70% -20%,#44206a40,transparent),radial-gradient(ellipse 50vw 45vw at 100% 70%,#09235b35,transparent),var(--bg);overflow-x:hidden;-webkit-font-smoothing:antialiased}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.4;cursor:not-allowed}a{color:inherit}button:focus-visible,[tabindex]:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #7fdcff;outline-offset:4px}::selection{background:#7247ff88}h1,h2,h3,p{margin:0}p{color:var(--muted)}.s-icon{display:inline-block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}.s-icon.sm{width:17px;height:17px}.s-icon.lg{width:24px;height:24px}.app{display:grid;grid-template-columns:244px minmax(0,1fr);min-height:100vh}.rail{z-index:10;position:sticky;top:0;height:100vh;padding:22px 14px 16px;display:flex;flex-direction:column;background:linear-gradient(165deg,#14142bbd,#0b1123f7 45%,#0d1023f5);border-right:1px solid var(--line);backdrop-filter:blur(18px)}.brand{display:flex;align-items:center;gap:11px;margin:2px 10px 30px;text-align:left}.brand-mark{width:44px;height:44px;position:relative;display:grid;place-items:center;border-radius:16px;background:conic-gradient(from 60deg,#ff71b7,#9e69ff,#4cb6ff,#4debcd,#f9ba6a,#ff71b7);box-shadow:0 0 34px #a86aff55}.brand-mark:after{content:'';position:absolute;inset:3px;background:#11142a;border-radius:13px}.brand-mark .s-icon{z-index:1}.brand b{display:block;font-size:15px;letter-spacing:-.4px}.brand small{color:var(--dim);font-weight:700;letter-spacing:1.7px;font-size:9px}.nav-label{margin:10px 13px 8px;text-transform:uppercase;letter-spacing:2px;color:#5f719a;font-weight:850;font-size:10px}.nav{border:1px solid transparent;position:relative;background:none;color:#a5adcb;display:flex;align-items:center;gap:12px;border-radius:13px;padding:12px 12px;width:100%;text-align:left;transition:color var(--duration),background var(--duration),transform var(--duration),border-color var(--duration);overflow:hidden}.nav:before{content:'';position:absolute;inset:0;background:linear-gradient(105deg,rgba(var(--n-rgb),.19),rgba(var(--n-rgb),.03));opacity:0;transition:opacity var(--duration)}.nav>*{position:relative}.nav .n-dot{margin-left:auto;width:6px;height:6px;border-radius:50%;background:rgb(var(--n-rgb));box-shadow:0 0 13px rgb(var(--n-rgb));opacity:0;transform:scale(.2);transition:transform .3s,opacity .3s}.nav:hover{background:#ffffff09;color:#fff;transform:translateX(3px)}.nav.active{color:#fff;border-color:rgba(var(--n-rgb),.3)}.nav.active:before,.nav.active .n-dot{opacity:1;transform:scale(1)}.nav .s-icon{color:rgb(var(--n-rgb));transition:transform .35s}.nav:hover .s-icon{transform:rotate(-8deg) scale(1.16)}.rail-end{margin-top:auto}.rail-card{margin:0 5px 12px;padding:14px;border:1px solid #ffffff25;border-radius:17px;background:linear-gradient(130deg,#261b4a,#142138 80%)}.rail-card .eyebrow{color:#bfb0ff}.rail-card p{font-size:11px;margin:7px 0 10px}.rail-card button{border:0;background:none;color:#b7dcff;padding:2px 0;font-weight:750}.tiny-row{display:flex;gap:7px;align-items:center;color:#8290b3;font-size:11px;margin:9px}.online-dot{height:6px;width:6px;background:#4ee5b8;border-radius:99px;box-shadow:0 0 12px #4ee5b8}.workspace{min-width:0}.topbar{position:sticky;top:0;z-index:9;height:76px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 clamp(22px,3.4vw,58px);border-bottom:1px solid #ffffff12;background:#080b1bdf;backdrop-filter:blur(22px)}.top-caption{font-size:11px;font-weight:760;letter-spacing:2.5px;text-transform:uppercase;color:#7c8aaa}.top-caption span{color:#c7a6ff}.top-actions{display:flex;align-items:center;gap:9px}.search-trigger{border:1px solid var(--line2);background:#ffffff0a;color:#9fabc9;min-width:220px;border-radius:12px;padding:10px 12px;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:16px;transition:.25s}.search-trigger:hover{color:#fff;border-color:#ab86ff73;background:#aa7aff14}.key{border:1px solid #ffffff36;padding:1px 6px;border-radius:6px;font-size:11px;color:#a6b0d3}.icon-btn{width:40px;height:40px;border:1px solid var(--line2);color:#ccd7f1;border-radius:12px;background:#ffffff09;display:grid;place-items:center;transition:background .25s,transform .25s,box-shadow .25s}.icon-btn:hover{background:#ffffff18;transform:translateY(-2px);box-shadow:0 6px 24px #6548e633}.icon-btn:active{transform:scale(.94)}.progress-top{position:fixed;top:0;left:244px;height:3px;background:linear-gradient(90deg,#9a6dff,#ff6cbe,#51b5ff,#42f1c7);width:0;z-index:31;pointer-events:none;box-shadow:0 0 14px #be76ff}.page{display:none;margin:0 auto;padding:35px clamp(20px,3.4vw,58px) 150px;max-width:1700px;animation:page-in .45s cubic-bezier(.2,.8,.2,1) both;min-height:calc(100vh - 76px)}.page.active{display:block}@keyframes page-in{from{opacity:0;transform:translateY(17px);filter:blur(2px)}to{opacity:1;transform:none;filter:none}}.eyebrow{text-transform:uppercase;font-size:11px;letter-spacing:2.1px;font-weight:850;color:#c29bff}.eyebrow .orb-small{color:#f8c775}.page-title{font-size:clamp(37px,5vw,70px);font-weight:860;letter-spacing:-3.3px;line-height:1.04;margin:13px 0 14px}.page-sub{font-size:15px;max-width:670px;color:#aab6d3}.accent-text{background:linear-gradient(100deg,#e7a7ff,#8ebcff 60%,#70f2d5);-webkit-background-clip:text;background-clip:text;color:transparent}.tool-header{display:flex;gap:24px;align-items:flex-end;justify-content:space-between;margin-bottom:27px}.tool-header .page-title{margin-bottom:12px}.inline-tags{display:flex;gap:8px;flex-wrap:wrap}.chip{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:760;letter-spacing:.35px;padding:7px 10px;border-radius:30px;border:1px solid #ffffff25;background:#ffffff09;color:#bbc6e5}.chip.dot::before{content:'';width:6px;height:6px;background:var(--accent);box-shadow:0 0 13px var(--accent);border-radius:50%}.chip.ready{color:#77ffda;border-color:#46f1c74d;background:#49e9b015}.glass{position:relative;border:1px solid var(--line);border-radius:var(--radius);background:linear-gradient(150deg,#171c36ed,#10162bfa);box-shadow:var(--shadow);overflow:hidden}.glass:before{content:'';position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,#ffffff5c,transparent);opacity:.7;pointer-events:none}.glass.inner{background:#0c1329d9;box-shadow:none}.panel{padding:23px}.panel-title{font-size:15px;font-weight:830;display:flex;align-items:center;gap:9px;letter-spacing:-.2px}.panel-title .s-icon{color:var(--accent)}.panel-desc{font-size:12px;color:var(--muted);margin-top:6px}.gradient-border{position:relative;isolation:isolate}.gradient-border:after{pointer-events:none;position:absolute;inset:-1px;border-radius:inherit;content:'';z-index:-1;background:linear-gradient(120deg,#b379ff91,#ff5cbd6e,#46c3ff7b,#44e4c09c);filter:blur(12px);opacity:.17}.btn{position:relative;isolation:isolate;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:9px;border:1px solid #ffffff23;padding:12px 17px;min-height:43px;background:#ffffff13;color:#f1f5ff;border-radius:12px;font-weight:760;letter-spacing:.03px;transition:transform var(--duration) cubic-bezier(.2,.8,.2,1),box-shadow var(--duration),background var(--duration),border-color var(--duration);white-space:nowrap}.btn:hover:not(:disabled){transform:translateY(-3px);border-color:#ffffff63;box-shadow:0 10px 25px #0004,0 0 26px rgba(var(--accent-rgb),.18)}.btn:active:not(:disabled){transform:translateY(1px) scale(.967)}.btn.primary{border-color:rgba(var(--accent-rgb),.65);color:#fff;background:linear-gradient(115deg,rgba(var(--accent-rgb),.98),rgba(var(--accent-rgb),.54) 50%,#4c6aff99);box-shadow:0 10px 35px rgba(var(--accent-rgb),.22),inset 0 1px #ffffff66}.btn.primary:hover{box-shadow:0 12px 42px rgba(var(--accent-rgb),.42),inset 0 1px #ffffff88}.btn.ghost{background:#ffffff06}.btn.tiny{font-size:12px;padding:8px 12px;min-height:36px}.btn .s-icon{width:18px;height:18px}.ripple{position:absolute;border-radius:50%;background:#ffffff66;transform:scale(0);animation:ripple .55s ease-out forwards;pointer-events:none;z-index:4}@keyframes ripple{to{transform:scale(4);opacity:0}}.hero{display:grid;grid-template-columns:1fr 1.05fr;min-height:490px;margin-top:26px;border:1px solid #a77bff64;background:radial-gradient(circle at 78% 36%,#50289199 0%,transparent 36%),radial-gradient(circle at 36% 80%,#105d9c55 0%,transparent 42%),linear-gradient(127deg,#1c173e,#0e1734 65%,#0c142b);border-radius:32px;overflow:hidden;isolation:isolate;box-shadow:0 30px 100px #0007;position:relative}.hero:before{content:'';position:absolute;inset:0;background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:40px 40px;mask-image:linear-gradient(90deg,transparent,#000)}.hero-copy{z-index:2;padding:clamp(32px,4.1vw,70px);display:flex;align-items:flex-start;justify-content:center;flex-direction:column}.hero-title{font-size:clamp(42px,5vw,76px);line-height:1.01;letter-spacing:-4px;font-weight:900;margin:19px 0}.hero-title span{background:linear-gradient(100deg,#d3a2ff 2%,#77beff 56%,#65eec8);-webkit-background-clip:text;background-clip:text;color:transparent}.hero-copy p{font-size:15px;max-width:390px}.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:29px}.hero-art{position:relative;min-height:440px;display:grid;place-items:center;transform-style:preserve-3d;perspective:800px}.orb-core{height:min(27vw,310px);width:min(27vw,310px);min-width:200px;min-height:200px;border:1px solid #ffffff31;border-radius:50%;background:radial-gradient(circle at 32% 24%,#ddbdffad,#8d6bff34 21%,#0b1533 48%,#06102a 69%),conic-gradient(from 45deg,#ec62b5 0,#7752ff 25%,#52bffe 47%,#34e0c4 73%,#e9a95f 88%,#ed61b3 100%);box-shadow:0 0 0 13px #ffffff06,0 0 0 32px #ffffff03,inset -28px -24px 90px #030a19,0 0 88px #9869ff40;display:grid;place-items:center;animation:orb-float 7s ease-in-out infinite}.orb-inner{height:58%;width:58%;border-radius:50%;border:1px solid #ffffff35;background:linear-gradient(150deg,#b7a7ff35,#172851b3);display:grid;place-items:center;box-shadow:inset 0 1px #ffffff70,0 0 70px #ffffff17}.orb-inner .s-icon{width:70px;height:70px;color:#faf5ff;filter:drop-shadow(0 0 15px #b7a6ff77)}@keyframes orb-float{50%{transform:translateY(-12px) rotate(4deg)}}.orbit{position:absolute;border:1px dashed #b1baff42;border-radius:50%;height:84%;width:84%;max-width:470px;max-height:470px;animation:orbit 32s linear infinite}.orbit.two{height:67%;width:67%;max-width:360px;max-height:360px;animation-duration:21s;animation-direction:reverse;border-style:solid;opacity:.56}@keyframes orbit{to{transform:rotate(360deg)}}.orbit-label{position:absolute;display:flex;align-items:center;gap:7px;font-size:11px;font-weight:760;color:#e7e9ff;padding:10px 13px;border-radius:12px;border:1px solid #ffffff40;background:#151b34bf;box-shadow:0 16px 35px #0008;backdrop-filter:blur(10px);animation:orb-float 6s ease-in-out infinite}.orbit-label b{height:7px;width:7px;border-radius:50%;background:var(--l);box-shadow:0 0 14px var(--l)}.orbit-label.one{top:12%;left:5%}.orbit-label.two{right:4%;top:26%;animation-delay:-2s}.orbit-label.three{bottom:13%;left:6%;animation-delay:-1s}.orbit-label.four{right:10%;bottom:7%;animation-delay:-3s}.section-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin:43px 0 17px}.section-head h2{font-size:25px;font-weight:830;letter-spacing:-.9px}.section-head p{font-size:13px;margin-top:6px}.module-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:13px}.module-card{--module:#aa79ff;position:relative;min-height:195px;border:1px solid #ffffff24;border-radius:20px;background:linear-gradient(165deg,#1d2240,#10162c);padding:18px 15px;display:flex;flex-direction:column;align-items:flex-start;text-align:left;overflow:hidden;isolation:isolate;transition:transform .35s cubic-bezier(.18,.87,.21,1.12),border-color .35s,box-shadow .35s}.module-card:before{content:'';pointer-events:none;position:absolute;height:125px;width:125px;right:-43px;top:-45px;border-radius:50%;background:var(--module);filter:blur(48px);opacity:.18;transition:opacity .3s,transform .4s}.module-card:hover{transform:translateY(-8px) scale(1.02);border-color:var(--module);box-shadow:0 14px 46px #0008,0 0 29px color-mix(in srgb,var(--module),transparent 78%)}.module-card:hover:before{opacity:.4;transform:scale(1.3)}.module-card .module-icon{width:47px;height:47px;border-radius:14px;background:color-mix(in srgb,var(--module),transparent 83%);border:1px solid color-mix(in srgb,var(--module),transparent 58%);color:var(--module);display:grid;place-items:center;margin-bottom:24px;transition:transform .35s cubic-bezier(.3,1.5,.4,1)}.module-card:hover .module-icon{transform:scale(1.12) rotate(-8deg)}.module-card b{font-size:15px}.module-card small{font-size:11px;color:#8998bd;margin-top:4px}.module-card .arrow{position:absolute;right:15px;bottom:18px;color:var(--module);transition:transform .3s}.module-card:hover .arrow{transform:translate(3px,-3px)}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.metric{padding:19px 21px;display:flex;align-items:center;gap:14px}.metric-icon{width:43px;height:43px;border-radius:13px;background:#9c70ff20;color:#bc9cff;display:grid;place-items:center}.metric b{display:block;font-size:22px;letter-spacing:-.8px}.metric small{color:#8492b6;font-size:12px}.metric p{font-size:11px}.feature-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:16px}.work-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);gap:16px}.stack{display:grid;gap:16px}.drop{position:relative;display:flex;min-height:205px;justify-content:center;align-items:center;flex-direction:column;text-align:center;gap:9px;background:radial-gradient(circle at 50% 10%,rgba(var(--accent-rgb),.12),transparent 65%),#0c142a;border:1.5px dashed rgba(var(--accent-rgb),.48);border-radius:18px;transition:border-color .25s,background .25s,transform .25s}.drop:hover,.drop.drag-over{border-color:var(--accent);background:rgba(var(--accent-rgb),.12);transform:scale(1.006)}.drop .big-icon{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:rgba(var(--accent-rgb),.16);color:var(--accent);border:1px solid rgba(var(--accent-rgb),.35);transition:transform .3s}.drop:hover .big-icon{transform:translateY(-5px) scale(1.06)}.drop .big-icon .s-icon{width:25px;height:25px}.drop strong{font-size:15px}.drop p{font-size:12px;max-width:280px}.drop input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}.drop input[type=file]:focus-visible{outline:2px solid var(--accent);outline-offset:3px}.queue{display:grid;gap:8px;margin-top:15px}.empty-state{padding:22px;border:1px solid #ffffff18;border-radius:14px;background:#070e20b0;color:#8593b8;font-size:12px;text-align:center}.file-row{display:flex;align-items:center;gap:12px;min-height:56px;border:1px solid #ffffff1b;background:#ffffff06;padding:8px 12px;border-radius:12px;min-width:0;animation:rise .35s both}.file-thumbnail{width:41px;height:41px;border:1px solid #ffffff24;border-radius:9px;background:#1c2544;overflow:hidden;display:grid;place-items:center;flex:none;color:#b0bef1}.file-thumbnail img{width:100%;height:100%;object-fit:cover}.file-row .file-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;font-size:12px}.file-row .file-meta{color:#8390b0;font-size:11px}.file-row .remove-file{border:0;background:#ffffff08;color:#a2aecb;width:27px;height:27px;display:grid;place-items:center;border-radius:8px}.file-row .remove-file:hover{background:#ff66892b;color:#ff8eaa}.setting{margin:15px 0 0}.setting>label{display:flex;justify-content:space-between;font-size:12px;font-weight:740;gap:15px;margin-bottom:8px}.setting .hint{color:#a7b4d2;font-variant-numeric:tabular-nums}.range{width:100%;accent-color:var(--accent);height:6px;cursor:pointer}.ratio-tabs{display:flex;gap:7px;flex-wrap:wrap}.ratio-tabs button,.pillset button{border:1px solid #ffffff20;border-radius:10px;background:#ffffff08;color:#aab5d1;padding:9px 11px;font-weight:730;transition:.24s}.ratio-tabs button:hover,.pillset button:hover{border-color:rgba(var(--accent-rgb),.6);color:#fff}.ratio-tabs button.active,.pillset button.active{color:#fff;background:rgba(var(--accent-rgb),.24);border-color:rgba(var(--accent-rgb),.7);box-shadow:0 0 18px rgba(var(--accent-rgb),.12)}.divider{height:1px;background:#ffffff15;margin:18px 0}.toolbar-inline{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;align-items:center}.notice{font-size:11px;color:#9eaccb;background:#0b1931;border:1px solid #ffffff20;border-radius:13px;padding:11px 13px;display:flex;gap:9px;align-items:flex-start}.notice .s-icon{color:var(--accent)}.process{display:flex;gap:10px;align-items:center;margin-top:17px}.progress-rail{flex:1;height:8px;border-radius:100px;background:#080d20;border:1px solid #ffffff15;overflow:hidden}.progress-fill{width:0%;height:100%;border-radius:100px;background:linear-gradient(90deg,var(--accent),#f874cc,#62bbff);box-shadow:0 0 22px var(--accent);transition:width .2s linear}.process-num{font-size:12px;font-variant-numeric:tabular-nums;color:#c4cee7;width:38px;text-align:right}.compare-placeholder{height:260px;border:1px dashed rgba(var(--accent-rgb),.39);border-radius:16px;display:grid;place-items:center;text-align:center;background:radial-gradient(circle at center,rgba(var(--accent-rgb),.09),transparent 65%),repeating-linear-gradient(0deg,transparent 0 24px,#ffffff08 25px),repeating-linear-gradient(90deg,transparent 0 24px,#ffffff08 25px),#091122;overflow:hidden}.compare-placeholder .s-icon{width:40px;height:40px;margin-bottom:7px;color:var(--accent)}.compare-placeholder span{display:block;color:#8492b5;font-size:12px}.crop-area{height:340px;background:#090f24;position:relative;border-radius:18px;overflow:hidden;display:grid;place-items:center;border:1px solid #ffffff22;background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px),radial-gradient(circle at center,rgba(var(--accent-rgb),.12),transparent 65%);background-size:27px 27px,27px 27px,auto}.crop-guide{position:relative;width:220px;height:220px;max-height:85%;border:2px solid var(--accent);box-shadow:0 0 0 100vmax #03071599,0 0 24px rgba(var(--accent-rgb),.64);transition:width .48s cubic-bezier(.21,.88,.23,1),height .48s cubic-bezier(.21,.88,.23,1)}.crop-guide:before,.crop-guide:after{content:'';position:absolute;inset:33.333% 0;border-top:1px dashed #ffffff90;border-bottom:1px dashed #ffffff90}.crop-guide:after{inset:0 33.333%;border:0;border-left:1px dashed #ffffff90;border-right:1px dashed #ffffff90}.handle{position:absolute;width:11px;height:11px;border:2px solid var(--accent);background:#fcffff;border-radius:3px;box-shadow:0 0 11px var(--accent)}.handle:nth-child(1){top:-6px;left:-6px}.handle:nth-child(2){top:-6px;right:-6px}.handle:nth-child(3){bottom:-6px;left:-6px}.handle:nth-child(4){bottom:-6px;right:-6px}.crop-label{position:absolute;top:12px;left:12px;color:#a8bbdd;font-size:11px;z-index:2;border:1px solid #ffffff26;border-radius:7px;background:#11182a;padding:5px 9px}.crop-metadata{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}.mini-stat{text-align:center;background:#ffffff08;border:1px solid #ffffff17;border-radius:12px;padding:13px 5px}.mini-stat b{display:block;font-size:16px}.mini-stat small{display:block;color:#8394b5;font-size:10px}.folder-map{display:flex;gap:12px;flex-wrap:wrap;margin:15px 0}.folder{flex:1;min-width:110px;padding:16px 12px;background:#ffbe6a10;border:1px solid #ffc16a37;border-radius:14px;text-align:center;color:#ffcf89;transition:.3s}.folder .s-icon{width:29px;height:29px;margin-bottom:8px}.folder b{display:block;color:#fff;font-size:12px}.folder span{color:#b6a7a0;font-size:11px}.folder:hover{transform:translateY(-5px);background:#ffbe6a1c}.shuffle-board{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}.shuffle-tile{height:105px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1px solid #ec7acd50;background:linear-gradient(150deg,#68225163,#311a5740);border-radius:15px;color:#f9b5dc;font-weight:800;transition:transform .55s cubic-bezier(.12,.93,.23,1.18),border-color .3s;position:relative}.shuffle-tile span{font-size:11px;color:#ba95bd}.shuffle-tile.active{border-color:#ff8ee4;box-shadow:0 0 26px #ff7ec02e}.checkboxline{display:flex;align-items:center;gap:10px;color:#c7d0e6;font-size:12px;margin-top:13px}.checkboxline input{accent-color:var(--accent);width:16px;height:16px}.lab-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}.lab-item{height:174px;border-radius:18px;padding:15px;overflow:hidden;border:1px solid #ffffff24;background:linear-gradient(160deg,#1b2040,#10162a);display:flex;flex-direction:column;justify-content:space-between;text-align:left;position:relative;transition:border-color .25s,transform .25s}.lab-item:hover{transform:translateY(-3px);border-color:#bf8dfd73}.lab-item .effect-visual{height:77px;position:relative;display:grid;place-items:center}.effect-visual .visual{height:48px;width:56px;display:grid;place-items:center;border:1px solid #c8a3ff80;border-radius:14px;background:linear-gradient(135deg,#9968ff67,#4064c866);color:#f0d9ff;box-shadow:0 0 24px #ae71ff2d}.lab-item small{color:#889ac1;font-size:10px;letter-spacing:1px;font-weight:800}.lab-item b{font-size:13px}.lab-item p{font-size:11px;margin-top:3px}.lab-item.running .visual{animation:demo-pop .8s cubic-bezier(.2,.85,.2,1)}@keyframes demo-pop{0%{transform:scale(.75) rotate(-16deg);filter:brightness(2)}45%{transform:scale(1.24) rotate(12deg)}80%{transform:scale(.92) rotate(-3deg)}100%{transform:none}}@keyframes lab-float{50%{transform:translateY(-19px)}}@keyframes lab-spin{to{transform:rotate(360deg)}}@keyframes lab-shake{10%,30%,50%,70%,90%{transform:translateX(-8px)}20%,40%,60%,80%{transform:translateX(8px)}}@keyframes lab-flip{50%{transform:rotateY(180deg)}}@keyframes lab-scale{50%{transform:scale(1.4,.68)}}@keyframes lab-hue{50%{filter:hue-rotate(220deg) saturate(2)}}@keyframes lab-shear{50%{transform:skew(15deg) rotate(9deg)}}@keyframes lab-glow{50%{box-shadow:0 0 60px #f86ac9,0 0 25px #fff7}}@keyframes lab-orbit{50%{transform:rotate(170deg) translateX(12px)}}@keyframes lab-slide{0%{transform:translateX(-45px);opacity:.1}50%{transform:translateX(25px);opacity:1}100%{transform:translateX(0)}}@keyframes lab-border{50%{border-radius:50%;border-color:#4ef3cf}}@keyframes lab-blur{0%,100%{filter:blur(0)}50%{filter:blur(8px)}}@keyframes lab-bounce{40%{transform:translateY(-30px)}65%{transform:translateY(5px)}80%{transform:translateY(-9px)}}@keyframes lab-pulse{50%{opacity:.26;transform:scale(.86)}}@keyframes lab-wobble{15%{transform:rotate(-18deg)}30%{transform:rotate(15deg)}45%{transform:rotate(-12deg)}60%{transform:rotate(8deg)}}@keyframes lab-expand{50%{transform:scaleX(1.75)}}@keyframes lab-zoom{50%{transform:scale(1.25)}}@keyframes lab-wave{25%{transform:translateY(-10px) rotate(-8deg)}75%{transform:translateY(7px) rotate(8deg)}}@keyframes lab-tilt{50%{transform:perspective(200px) rotateX(32deg) rotateY(-27deg)}}@keyframes lab-reveal{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}@keyframes lab-ripple{50%{box-shadow:0 0 0 30px #a67bff00,0 0 0 10px #a67bff99}}@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}.lab-item.running[data-effect=lift] .visual{animation:lab-bounce .85s}.lab-item.running[data-effect=glow] .visual{animation:lab-glow .85s}.lab-item.running[data-effect=spin] .visual{animation:lab-spin 1s}.lab-item.running[data-effect=squish] .visual{animation:lab-scale .8s}.lab-item.running[data-effect=flip] .visual{animation:lab-flip .9s}.lab-item.running[data-effect=shake] .visual{animation:lab-shake .6s}.lab-item.running[data-effect=wave] .visual{animation:lab-wave .9s}.lab-item.running[data-effect=morph] .visual{animation:lab-border .9s}.lab-item.running[data-effect=slide] .visual{animation:lab-slide .9s}.lab-item.running[data-effect=tilt] .visual{animation:lab-tilt 1s}.lab-item.running[data-effect=hue] .visual{animation:lab-hue 1s}.lab-item.running[data-effect=orbit] .visual{animation:lab-orbit 1s}.lab-item.running[data-effect=blur] .visual{animation:lab-blur .9s}.lab-item.running[data-effect=bounce] .visual{animation:lab-bounce .9s}.lab-item.running[data-effect=pulse] .visual{animation:lab-pulse .9s}.lab-item.running[data-effect=wobble] .visual{animation:lab-wobble .8s}.lab-item.running[data-effect=expand] .visual{animation:lab-expand .85s}.lab-item.running[data-effect=zoom] .visual{animation:lab-zoom .85s}.lab-item.running[data-effect=reveal] .visual{animation:lab-reveal .85s}.lab-item.running[data-effect=ripple] .visual{animation:lab-ripple .9s}.lab-item.running[data-effect=float] .visual{animation:lab-float .95s}.lab-item.running[data-effect=shear] .visual{animation:lab-shear .9s}.lab-item.running[data-effect=border] .visual{animation:lab-border .9s}.lab-item.running[data-effect=flash] .visual{animation:lab-glow .55s}.control-strip{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:15px 17px;background:#131931;border:1px solid #ffffff23;border-radius:15px;margin:24px 0}.control-strip strong{margin-right:auto}.pillset{display:flex;gap:5px;align-items:center}.pillset button{font-size:11px;padding:7px 10px}.switch{position:relative;width:43px;height:26px;border:1px solid #ffffff36;border-radius:20px;background:#ffffff12;padding:0;transition:.25s}.switch:before{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#9daccb;border-radius:50%;transition:.25s}.switch.on{background:#45eac154;border-color:#44eac1}.switch.on:before{left:20px;background:#5dfbd4}.blueprint-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.check-card{padding:18px 20px}.check-card h3{font-size:15px;margin-bottom:9px;display:flex;align-items:center;gap:8px}.check-card h3 .s-icon{color:var(--accent)}.check-card ul{padding-left:16px;margin:0;color:#aab7d3;font-size:12px;line-height:1.85}.check-card li::marker{color:var(--accent)}.timeline{display:grid;gap:9px}.timeline-row{display:grid;grid-template-columns:80px 1fr;gap:12px;align-items:start;font-size:12px;padding:11px 0;border-bottom:1px solid #ffffff14}.timeline-row b{color:#a8d8ff}.timeline-row span{color:#aab7d3}.toast-stack{position:fixed;right:20px;bottom:22px;display:grid;gap:8px;z-index:70;max-width:min(410px,calc(100vw - 40px))}.toast{background:#182039f5;border:1px solid #a880ff77;box-shadow:0 20px 60px #0008;border-radius:14px;padding:14px 17px;display:flex;gap:12px;align-items:center;animation:toast-in .37s cubic-bezier(.2,1,.3,1) both;color:#f5f6ff}.toast .s-icon{color:#c6a1ff}.toast-out{animation:toast-out .22s both}@keyframes toast-in{from{transform:translate(25px,20px) scale(.93);opacity:0}}@keyframes toast-out{to{transform:translateX(30px);opacity:0}}.overlay{position:fixed;inset:0;z-index:80;background:#050918bf;backdrop-filter:blur(16px);display:none;align-items:flex-start;justify-content:center;padding:17vh 16px 16px}.overlay.open{display:flex;animation:fade .22s}@keyframes fade{from{opacity:0}to{opacity:1}}.command{width:min(600px,100%);border:1px solid #a27afd7c;border-radius:19px;background:#12182e;box-shadow:0 40px 130px #000b,0 0 90px #8b61ff24;overflow:hidden;animation:command-in .3s both}@keyframes command-in{from{opacity:0;transform:translateY(-18px) scale(.97)}}.command input{padding:20px;width:100%;outline:0;border:0;border-bottom:1px solid #ffffff23;background:none;color:#fff;font-size:17px}.command-results{padding:10px;max-height:55vh;overflow:auto}.command-results button{width:100%;display:flex;align-items:center;gap:11px;text-align:left;padding:13px 12px;border:0;border-radius:11px;background:none;color:#cdd7f3}.command-results button:hover,.command-results button:focus-visible{background:#a87bff21;color:#fff}.command-foot{padding:10px 18px;border-top:1px solid #ffffff20;color:#7d8ba9;font-size:11px}.back-top{position:fixed;right:23px;bottom:23px;z-index:39;transform:translateY(35px) scale(.8);opacity:0;pointer-events:none;background:#704aff;color:#fff;border:1px solid #cbb3ff9c;border-radius:15px;width:45px;height:45px;display:grid;place-items:center;box-shadow:0 8px 30px #7154ff5c;transition:opacity .25s,transform .25s}.back-top.show{opacity:1;transform:none;pointer-events:auto}.scroll-demo{height:200px;border-radius:16px;overflow:auto;border:1px solid #ffffff20;background:#0b1125;overscroll-behavior:contain}.scroll-demo .scroller-content{height:610px;padding:18px;background:linear-gradient(#b06aff18,#54cfff16,#40efbe18);display:flex;align-items:flex-start;justify-content:space-between;flex-direction:column;color:#c9d4ec}.scroll-demo::-webkit-scrollbar{width:8px}.scroll-demo::-webkit-scrollbar-thumb{background:#725eaf;border-radius:9px}.footline{font-size:11px;color:#607295;display:flex;justify-content:space-between;gap:10px;margin-top:28px}.spectrum-line{height:3px;border-radius:5px;background:linear-gradient(90deg,#ad73ff,#ff61be,#53bdff,#41efc4,#ffc674);box-shadow:0 0 20px #ac70ff55}.intro-note{border:1px solid #9e81fd50;background:#9272fc13;border-radius:15px;padding:16px 18px;display:flex;gap:13px;align-items:flex-start;font-size:12px;color:#b5c0e2}.intro-note b{color:#eff3ff}.intro-note .s-icon{color:#c5b0ff}.info-note{display:flex;align-items:center;gap:8px;font-size:11px;color:#8c9bbd}.color-swatch{height:45px;border-radius:10px;border:1px solid #ffffff2a}.color-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.palette-card{min-width:0}.palette-card code{font-size:10px;color:#a4b4d5}.chips-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.skeleton-demo{height:25px;border-radius:9px;background:linear-gradient(90deg,#ffffff12 0%,#ffffff28 35%,#ffffff12 65%);background-size:200% 100%;animation:shimmer 1.8s ease-in-out infinite}@keyframes shimmer{to{background-position-x:-200%}}.txt-mini{font-size:11px;color:#8292b8}.bold-num{font-size:28px;letter-spacing:-1px;font-weight:800;font-variant-numeric:tabular-nums}.qr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.mode-pill{font-size:10px;border:1px solid #60eac24b;color:#80fcd8;border-radius:99px;padding:4px 8px}.state-line{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #ffffff13}.state-line:last-child{border:0}.state-line b{font-size:12px}.state-line p{font-size:11px}.count-up{display:inline-block;transition:color .4s}.screenreader{position:absolute;left:-9999px}.confetti{position:fixed;z-index:100;pointer-events:none;width:8px;height:12px;border-radius:3px;animation:confetti-drop .9s ease-in both}@keyframes confetti-drop{to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}body.low-motion *,body.low-motion *:before,body.low-motion *:after{animation:none!important;transition-duration:.01ms!important;scroll-behavior:auto!important}body.balanced-motion .orbit,body.balanced-motion .orb-core,body.balanced-motion .orbit-label{animation-duration:20s}body.no-glow .orb-core,body.no-glow .btn,body.no-glow .module-card,body.no-glow .crop-guide{box-shadow:none!important}body.no-glow .module-card:before,body.no-glow .gradient-border:after{display:none}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}@media(max-width:1360px){.module-grid{grid-template-columns:repeat(3,1fr)}.lab-grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:980px){.app{grid-template-columns:76px minmax(0,1fr)}.rail{padding:20px 9px}.brand{margin:0 5px 27px}.brand>div:last-child,.nav>span.nav-text,.nav-label,.nav .n-dot,.rail-end .rail-card,.rail-end .tiny-row{display:none}.nav{justify-content:center;padding:12px}.progress-top{left:76px}.hero{grid-template-columns:1fr}.hero-art{min-height:330px}.orb-core{height:245px;width:245px}.feature-grid,.work-grid{grid-template-columns:1fr}.orbit-label.one{left:17%}.orbit-label.two{right:15%}.lab-grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:630px){.app{display:block}.rail{position:sticky;top:0;height:64px;z-index:22;padding:7px 8px;flex-direction:row;align-items:center;overflow:auto;gap:4px;border-right:none;border-bottom:1px solid var(--line);background:#0b1022eF}.brand{flex:none;margin:0 6px 0 0}.brand-mark{width:40px;height:40px;border-radius:13px}.brand-mark:after{border-radius:10px}.rail .nav{flex:none;width:41px;height:43px;padding:10px}.rail-end{display:none}.progress-top{left:0;top:64px}.topbar{top:64px;height:58px;padding:0 16px}.top-caption{font-size:9px;letter-spacing:1.5px}.search-trigger{min-width:38px;width:38px;padding:8px}.search-trigger span:first-child,.search-trigger .key{display:none}.search-trigger:before{content:'⌕';font-size:22px}.icon-btn{width:36px;height:36px}.page{padding:27px 16px 95px}.hero{margin-top:19px;border-radius:22px}.hero-copy{padding:32px 23px}.hero-title{font-size:48px;letter-spacing:-2.6px}.hero-art{min-height:260px}.orb-core{height:170px;width:170px;min-height:170px;min-width:170px}.orb-inner .s-icon{height:40px;width:40px}.orbit-label{font-size:9px;padding:6px 8px}.orbit-label.one{left:4%}.orbit-label.two{right:4%}.module-grid{grid-template-columns:repeat(2,1fr)}.module-card{min-height:165px}.metrics{grid-template-columns:1fr}.panel{padding:17px}.page-title{font-size:39px;letter-spacing:-2px}.tool-header{align-items:flex-start;flex-direction:column}.lab-grid,.blueprint-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.lab-item{height:155px;padding:12px}.shuffle-board{grid-template-columns:repeat(3,1fr)}.footline{flex-direction:column}.color-grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:380px){.module-grid,.lab-grid{grid-template-columns:1fr}.module-card{min-height:150px}.tool-header{gap:12px}}
+.crop-guide.no-grid:before,.crop-guide.no-grid:after{display:none}
+
+/* Workspace layout — removes promotional hero and presentation typography. */
+.page{max-width:1510px;padding-top:27px;padding-bottom:75px;animation:page-in .29s cubic-bezier(.2,.8,.2,1) both}
+.page-title{font-size:clamp(29px,3.6vw,43px);letter-spacing:-1.55px;line-height:1.13;margin:6px 0 7px}
+.tool-header{margin-bottom:22px;align-items:center}.tool-header .page-sub{font-size:13px;max-width:750px}
+.eyebrow{font-size:10px;letter-spacing:1.45px}.workspace-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;margin:5px 0 23px}
+.workspace-heading h1{font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-1.55px;line-height:1.13;margin:8px 0}
+.workspace-heading p{font-size:13px}.workspace-status{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:11px;color:var(--muted);background:#151b32;border:1px solid var(--line);padding:9px 12px;border-radius:11px}.workspace-status-sep{opacity:.45}
+.workspace-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,.8fr);gap:16px}.dashboard-drop,.dashboard-side{min-height:310px}.dashboard-count{background:#ffffff14;border:1px solid #ffffff21;font-size:11px;color:#bdc8e7;border-radius:40px;padding:1px 9px;margin-left:auto}
+.dashboard-zone{margin:19px 0 12px;min-height:142px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border-style:dashed;border-color:#7476ae88;background:radial-gradient(ellipse at 50% 0%,#7950cc13,transparent 68%),#0c1429;cursor:pointer;transition:border-color var(--duration),transform var(--duration),background var(--duration)}.dashboard-zone:hover,.dashboard-zone.drag-over{border-color:#b08aff;transform:translateY(-2px);background:#231b42}
+.dashboard-zone strong{font-size:14px}.dashboard-zone .drop-sub{font-size:12px;color:var(--muted)}.dashboard-zone .upload-symbol{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#9064ff33,#46c4ff22);border:1px solid #a986ff70;color:#c7a6ff}
+#homeFileList{max-height:230px;overflow:auto;overscroll-behavior:contain}.workspace-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}.workspace-actions .btn{min-height:39px;padding:9px 13px;font-size:12px}
+.session-stat{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #ffffff12;padding:15px 0;color:var(--muted);font-size:12px}.session-stat strong{font-size:24px;line-height:1;color:var(--text)}.session-value{color:var(--text)}.dashboard-side .divider{margin:20px 0}.dashboard-motion{margin-top:13px;flex-wrap:wrap}.dashboard-lab{margin-top:17px}
+.dashboard-tool-title{margin-top:32px}.workspace-footer{margin-top:24px;padding-top:15px;border-top:1px solid #ffffff12;color:var(--dim);font-size:11px}.module-grid{margin-top:16px}
+@media(max-width:1050px){.workspace-grid{grid-template-columns:1fr}.workspace-heading{align-items:flex-start;flex-direction:column}}
+@media(max-width:600px){.workspace-status{font-size:10px}.dashboard-drop,.dashboard-side{min-height:0}.workspace-actions .btn{flex:1}.page{padding-bottom:50px}}
+
+/* 2026 / HyperMotion: two- or three-color theme system with neutral-blue default. */
+:root{--c1:#4c8dff;--c2:#69bfff;--c3:#91a7db;--c1-rgb:76,141,255;--c2-rgb:105,191,255;--c3-rgb:145,167,219;--accent:var(--c1);--accent-rgb:var(--c1-rgb);--mix3:var(--c2);--glow-scale:.65;--contrast-scale:.5;--surface-overlay:rgba(255,255,255,.05);--theme-gradient:linear-gradient(115deg,var(--c1),var(--c2))}
+html{scrollbar-color:var(--c1) #101728}
+body{background:radial-gradient(ellipse 70vw 42vw at 70% -28%,color-mix(in srgb,var(--c1),transparent 88%),transparent),radial-gradient(ellipse 55vw 45vw at 100% 80%,color-mix(in srgb,var(--c2),transparent 93%),transparent),#080d18}
+.brand-mark{background:linear-gradient(145deg,var(--c1),var(--c2))!important;box-shadow:0 0 20px color-mix(in srgb,var(--c1),transparent 70%)}
+.brand-mark:after{background:#101a2d}
+.rail{background:linear-gradient(165deg,#10192bea,#0a111ff8 55%,#0b1525f9)}
+.rail .nav{--n-rgb:var(--c1-rgb)}
+.rail .nav:nth-of-type(2n){--n-rgb:var(--c2-rgb)}
+.rail .nav.active{background:color-mix(in srgb,var(--c1),transparent 90%)}
+.topbar{background:#090f1de8}
+.top-caption span,.eyebrow{color:var(--c2)}
+.search-trigger:hover,.command{border-color:color-mix(in srgb,var(--c1),transparent 50%)}
+.icon-btn:hover{box-shadow:0 6px 24px color-mix(in srgb,var(--c1),transparent 72%)}
+.progress-top,.spectrum-line{background:var(--theme-gradient);box-shadow:0 0 14px color-mix(in srgb,var(--c1),transparent 55%)}
+.page{--accent:var(--c1)!important;--accent-rgb:var(--c1-rgb)!important}
+.glass{background:linear-gradient(155deg,var(--panel-hi),#0e1829);border-color:color-mix(in srgb,var(--c1),#ffffff20 91%)}
+.glass:before{background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--c2),transparent 72%),transparent)}
+.btn.primary{background:var(--theme-gradient);border-color:color-mix(in srgb,var(--c1),#ffffff 20%);color:#fff;box-shadow:var(--button-glow),inset 0 1px #ffffff60}
+.btn.primary:hover{box-shadow:0 12px 42px color-mix(in srgb,var(--c1),transparent 64%),inset 0 1px #ffffff88}
+.btn:hover:not(:disabled){box-shadow:0 10px 22px #0005,0 0 22px color-mix(in srgb,var(--c1),transparent 83%)}
+.module-card{--module:var(--c1)!important;background:linear-gradient(165deg,#17243a,#101927)}
+.module-card:nth-child(2n){--module:var(--c2)!important}
+.module-card:nth-child(3n){--module:var(--mix3)!important}
+.module-card:hover{box-shadow:0 12px 40px #0008,0 0 22px color-mix(in srgb,var(--module),transparent 75%)}
+.progress-fill{background:var(--theme-gradient);box-shadow:0 0 20px color-mix(in srgb,var(--c1),transparent 35%)}
+.accent-text{background:var(--theme-gradient);-webkit-background-clip:text;background-clip:text}
+.gradient-border:after{background:var(--theme-gradient)}
+.dashboard-zone{border-color:color-mix(in srgb,var(--c1),transparent 54%);background:radial-gradient(ellipse at 50% 0%,color-mix(in srgb,var(--c1),transparent 93%),transparent 68%),#0c1429}
+.dashboard-zone:hover,.dashboard-zone.drag-over{border-color:var(--c1);background:color-mix(in srgb,var(--c1),#101726 88%)}
+.dashboard-zone .upload-symbol{background:linear-gradient(135deg,color-mix(in srgb,var(--c1),transparent 75%),color-mix(in srgb,var(--c2),transparent 85%));border-color:var(--c1);color:var(--c2)}
+.shuffle-tile{border-color:color-mix(in srgb,var(--c1),transparent 65%);background:linear-gradient(150deg,color-mix(in srgb,var(--c1),transparent 86%),color-mix(in srgb,var(--c2),transparent 92%));color:var(--text)}
+.shuffle-tile span{color:var(--muted)}.shuffle-tile.active{border-color:var(--c2);box-shadow:0 0 26px color-mix(in srgb,var(--c1),transparent 78%)}
+.lab-item:hover{border-color:var(--c1)}.effect-visual .visual{border-color:color-mix(in srgb,var(--c1),transparent 45%);background:var(--theme-gradient);color:white;box-shadow:0 0 22px color-mix(in srgb,var(--c1),transparent 80%)}
+.toast{border-color:color-mix(in srgb,var(--c1),transparent 50%)}.toast .s-icon{color:var(--c2)}
+.command-results button:hover,.command-results button:focus-visible{background:color-mix(in srgb,var(--c1),transparent 85%)}
+.switch.on{background:color-mix(in srgb,var(--c1),transparent 66%);border-color:var(--c2)}.switch.on:before{background:var(--c2)}
+.back-top{background:var(--c1);border-color:var(--c2);box-shadow:0 8px 30px color-mix(in srgb,var(--c1),transparent 68%)}
+.skeleton-demo{background:linear-gradient(90deg,color-mix(in srgb,var(--c1),transparent 93%),color-mix(in srgb,var(--c2),transparent 80%),color-mix(in srgb,var(--c1),transparent 93%));background-size:200% 100%}
+.scroll-demo::-webkit-scrollbar-thumb{background:var(--c1)}
+.scroll-demo .scroller-content{background:linear-gradient(color-mix(in srgb,var(--c1),transparent 90%),color-mix(in srgb,var(--c2),transparent 93%))}
+.theme-settings{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:16px;margin:14px 0 28px;align-items:stretch}
+.theme-palette-card,.theme-preview-card{min-width:0}
+#paletteBadge{margin-left:auto;color:var(--c2)}
+.setting-subhead{font-size:11px;font-weight:800;letter-spacing:1.3px;color:var(--muted);text-transform:uppercase;margin:23px 0 10px}
+.palette-count button,.pillset button{background:#ffffff0a;border:1px solid #ffffff1e;color:var(--muted);border-radius:10px;cursor:pointer;transition:background .25s,color .25s,border-color .25s,transform .25s}
+.palette-count button:hover,.pillset button:hover{transform:translateY(-2px)}
+.palette-count button.active,.pillset button.active{background:color-mix(in srgb,var(--c1),transparent 83%);border-color:color-mix(in srgb,var(--c1),transparent 30%);color:#fff}
+.preset-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.preset-card{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid #ffffff25;border-radius:12px;background:#111b2a;color:#cbd5e9;text-align:left;font-size:12px;font-weight:700;transition:transform .25s,border-color .25s,background .25s;min-width:0}
+.preset-card:hover{transform:translateY(-3px);background:#19263b;border-color:color-mix(in srgb,var(--c1),transparent 45%)}
+.preset-card.active{border-color:var(--c1);background:color-mix(in srgb,var(--c1),transparent 90%)}
+.preset-mark{display:flex;align-items:center;gap:0;border-radius:100px;overflow:hidden;height:23px;min-width:57px;border:1px solid #ffffff40}
+.preset-mark i{display:block;height:100%;flex:1}
+.color-input-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.color-field{font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+.color-field[hidden]{display:none!important}
+.color-control{height:45px;border:1px solid #ffffff28;background:#0c1625;border-radius:11px;display:flex;gap:10px;align-items:center;padding:6px 9px}
+.color-control input{padding:0;border:0;background:transparent;cursor:pointer;width:34px;height:29px}
+.color-control output{color:#d3ddf1;letter-spacing:.8px;font:700 11px ui-monospace,SFMono-Regular,Menlo,monospace}
+.theme-bar{height:20px;background:var(--theme-gradient);border-radius:10px;border:1px solid #ffffff32;margin-top:16px;transition:background .25s}
+.palette-footer{display:flex;gap:12px;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:12px}
+.live-demo-surface{margin-top:17px;padding:17px;border:1px solid color-mix(in srgb,var(--c1),transparent 68%);border-radius:16px;background:radial-gradient(circle at 80% 0%,color-mix(in srgb,var(--c1),transparent 89%),transparent 60%),#0a1423}
+.demo-preview-head{display:flex;align-items:center;gap:9px;font-size:12px}.demo-preview-head .chip{margin-left:auto}
+.preview-pulse{width:9px;height:9px;border-radius:50%;background:var(--c1);box-shadow:0 0 15px var(--c1);animation:soft-pulse 1.7s ease-in-out infinite}
+.demo-fake-tabs{display:flex;gap:6px;margin:21px 0 12px}
+.demo-fake-tabs button{flex:1;padding:8px 6px;border:1px solid #ffffff18;background:#ffffff0b;color:var(--muted);border-radius:9px;font-size:11px;transition:all .25s}
+.demo-fake-tabs button.active{background:color-mix(in srgb,var(--c1),transparent 78%);color:#fff;border-color:var(--c1)}
+.preview-card-tile{border:1px solid color-mix(in srgb,var(--c2),transparent 66%);border-radius:13px;display:flex;gap:12px;align-items:center;padding:13px;background:#ffffff08;transition:transform .3s,border-color .3s,box-shadow .3s}
+.preview-card-tile:hover{transform:translateY(-4px);border-color:var(--c2);box-shadow:0 9px 35px color-mix(in srgb,var(--c1),transparent 85%)}
+.preview-card-tile>div:nth-child(2){flex:1;min-width:0}.preview-card-tile strong{display:block;font-size:12px}.preview-card-tile span{display:block;font-size:10px;color:var(--muted)}
+.preview-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:color-mix(in srgb,var(--c1),transparent 75%);color:var(--c2)}
+.preview-progress{height:7px;overflow:hidden;border-radius:9px;background:#050a14;border:1px solid #ffffff12;margin:20px 0}
+.preview-progress>div{height:100%;width:72%;border-radius:9px;background:var(--theme-gradient);transition:width .65s cubic-bezier(.22,.9,.3,1)}
+.preview-card-tile+.toolbar-inline{flex-wrap:wrap}.theme-lab-title{margin-top:30px}
+.slider-with-value{min-width:140px;display:flex;gap:12px;align-items:center}.slider-with-value input{width:115px;accent-color:var(--c1)}.slider-with-value output{font-size:11px;color:var(--c2);min-width:29px}
+.facy-connect{display:flex;align-items:center;gap:18px;margin-bottom:17px;border-color:color-mix(in srgb,var(--c1),transparent 63%)}
+.facy-logo{width:52px;height:52px;border-radius:15px;background:color-mix(in srgb,var(--c1),transparent 82%);border:1px solid var(--c1);color:var(--c2);display:grid;place-items:center;flex:none}
+.facy-connect-copy{flex:1;min-width:0}.facy-connect-copy .panel-title{flex-wrap:wrap}.facy-connect-copy p{font-size:12px;margin-top:6px;max-width:820px}.facy-connect-hint{color:var(--c2);font-size:11px;margin-top:9px}
+.facy-actions{display:flex;gap:8px;align-items:stretch;flex-direction:column;flex:none}.facy-actions .btn{font-size:12px;min-height:38px;padding:9px 14px;text-decoration:none}
+body.no-glow .brand-mark,body.no-glow .preview-pulse{box-shadow:none}
+@media(max-width:1110px){.theme-settings{grid-template-columns:1fr}.facy-connect{align-items:flex-start;flex-wrap:wrap}.facy-actions{flex-direction:row;flex-wrap:wrap}}
+@media(max-width:630px){.preset-grid{grid-template-columns:1fr 1fr}.color-input-grid{grid-template-columns:1fr}.theme-settings{gap:12px}.palette-footer{flex-wrap:wrap}.facy-actions{width:100%}.facy-actions .btn{flex:1}.facy-logo{width:40px;height:40px}.state-line{grid-template-columns:1fr}.slider-with-value input{width:min(75vw,280px)}}
+
+
+:root{--panel-hi:#18243a;--button-glow:0 8px 30px rgba(76,141,255,.3)}
+/* Hue Spectrum plays the chosen theme colors, never an unsolicited rainbow. */
+.lab-item.running[data-effect=hue] .visual{animation:lab-palette 1s ease-in-out!important}
+@keyframes lab-palette{0%,100%{background:var(--c1);box-shadow:0 0 18px color-mix(in srgb,var(--c1),transparent 55%)}48%{background:var(--c2);box-shadow:0 0 30px color-mix(in srgb,var(--c2),transparent 40%)}80%{background:var(--mix3)}}
+@keyframes soft-pulse{0%,100%{opacity:.6;transform:scale(.95)}50%{opacity:1;transform:scale(1.25)}}
+.lab-item.running[data-effect=ripple] .visual{animation:lab-ripple 1s ease-in!important}
+@keyframes lab-ripple{50%{box-shadow:0 0 0 30px color-mix(in srgb,var(--c1),transparent 100%),0 0 0 10px color-mix(in srgb,var(--c1),transparent 40%)}}
+body.no-glow .live-demo-surface .preview-pulse{box-shadow:none!important}
+body:not(.low-motion) .theme-palette-card,body:not(.low-motion) .theme-preview-card{transition:border-color .3s,transform .3s}
+.theme-palette-card:hover,.theme-preview-card:hover{border-color:color-mix(in srgb,var(--c1),transparent 55%)}
+/* Lower visual noise: two neutral blue accents until user selects a preset. */
+::selection{background:color-mix(in srgb,var(--c1),transparent 60%)}
+button:focus-visible,[tabindex]:focus-visible,input:focus-visible,select:focus-visible{outline-color:var(--c2)}
+.scroll-demo .scroller-content{color:var(--text)}
+
+/* HyperMotion 7.1: responsive precision controls + virtualized crop batch queue */
+#page-sort .setting:has(#perFolder){display:grid;grid-template-columns:minmax(0,1fr) 86px;gap:8px 12px;align-items:center}
+#page-sort .setting:has(#perFolder) label{grid-column:1/-1}
+#perFolder{width:100%;min-width:0}
+.ps-range-number{appearance:textfield;min-width:0;width:86px;padding:9px 10px;color:var(--text);background:#0b1428;border:1px solid var(--line2);border-radius:10px;text-align:center;font-weight:750}
+.ps-range-number::-webkit-inner-spin-button,.ps-range-number::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.ps-range-number:focus-visible{border-color:var(--accent)}
+.ps-crop-summary{font-size:12px;color:var(--muted);margin:14px 0 7px}
+.ps-crop-queue{height:0;max-height:245px;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(var(--accent-rgb),.8) #0b1428;border:0;border-radius:12px;contain:layout paint;scroll-behavior:auto}
+.ps-crop-queue.has-files{height:235px;border:1px solid var(--line2);background:#0b1428;margin-bottom:10px}
+#cropClearBatch{margin-top:5px}
+@media(max-width:600px){.ps-crop-queue.has-files{height:206px}}
+</style><style>
+.ps-language-wrap{display:inline-flex;align-items:center;gap:7px;border:1px solid color-mix(in srgb,var(--c1),transparent 60%);border-radius:12px;background:rgba(21,30,50,.85);padding:8px 10px;transition:box-shadow .3s,border-color .3s,transform .3s;cursor:pointer;max-height:42px}
+.ps-language-wrap:hover{border-color:var(--c2);box-shadow:0 4px 24px color-mix(in srgb,var(--c1),transparent 70%);transform:translateY(-1px)}
+.ps-lang-glyph{font-size:11px;font-weight:800;color:var(--c2);letter-spacing:.5px}
+#psLanguage{appearance:none;background:transparent;border:0;color:#edf4ff;font:700 13px/1 system-ui,sans-serif;outline:none;cursor:pointer;padding-right:3px}
+#psLanguage option{color:#101622;background:white}
+#psOpenResults{margin-left:5px}#psFacyDone{margin-left:8px}
+@media(max-width:650px){.ps-lang-glyph{display:none}.ps-language-wrap{padding:9px 6px}.top-actions{gap:6px}}
+</style><style>.ps-folder-action{display:flex;justify-content:flex-end;margin:5px 0 12px}.ps-folder-action .btn{cursor:pointer}</style><style id="ps6-refinements">
+/* Photo Studio 6 · precise Face Swap interaction polish */
+#facyConnectionPanel{overflow:visible;flex-wrap:wrap}
+#facyConnectionPanel .facy-inline-note{flex:1 0 100%;width:100%;margin:0}
+#facyConnectionPanel .facy-actions{display:grid;grid-template-columns:1fr;gap:8px;flex:0 0 202px;align-self:center}
+#facyConnectionPanel .facy-actions .btn{box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:100%;min-width:0;min-height:40px;height:40px;padding:9px 10px;white-space:nowrap;line-height:1.15;font-weight:730;font-size:12px;border-radius:11px}
+.facy-inline-note{display:flex;align-items:center;gap:12px;margin:12px 0 0;padding:12px 16px;border:1px solid color-mix(in srgb,var(--c1) 50%,transparent);background:linear-gradient(100deg,rgba(var(--accent-rgb),.16),#0b182a);border-radius:14px;box-shadow:0 12px 40px #0003;animation:ps-note-in .38s cubic-bezier(.2,.9,.2,1) both;min-height:65px}
+.facy-inline-note[hidden]{display:none!important}.facy-inline-note[data-state="success"]{border-color:#36caa67d;background:linear-gradient(100deg,#10382eaa,#0c1824)}.facy-inline-note[data-state="error"]{border-color:#f67e8c88;background:linear-gradient(100deg,#391f2daa,#101827)}
+.facy-state-icon{flex:none;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:rgba(var(--accent-rgb),.16);color:var(--c2);border:1px solid rgba(var(--accent-rgb),.45);font-weight:800}
+.facy-inline-note[data-state="success"] .facy-state-icon{color:#61edc4;background:#123d31;border-color:#61edc455}
+.facy-state-copy{display:flex;flex-direction:column;gap:2px;min-width:0}.facy-state-copy strong{font-size:13px}.facy-state-copy span{color:var(--muted);font-size:11.5px;line-height:1.4}
+@keyframes ps-note-in{from{opacity:0;transform:translateY(-9px) scale(.985)}to{opacity:1;transform:none}}
+.queue-topline{display:flex;align-items:center;justify-content:space-between;margin-top:14px;font-size:12px;font-weight:720;color:var(--text);padding:0 3px;gap:12px}.queue-topline .chip{white-space:nowrap;font-size:10px}
+#faceTargetList.face-target-queue{margin-top:8px;min-height:82px;max-height:264px;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:var(--c1) #0b1526;align-content:start;padding:3px 5px 6px 1px;isolation:isolate}
+#faceTargetList.face-target-queue::-webkit-scrollbar{width:7px}#faceTargetList.face-target-queue::-webkit-scrollbar-track{background:#0b1526;border-radius:10px}#faceTargetList.face-target-queue::-webkit-scrollbar-thumb{background:linear-gradient(var(--c1),var(--c2));border-radius:10px}
+#faceTargetList .file-row{min-height:58px;animation:ps-note-in .28s cubic-bezier(.2,.9,.2,1) both;transition:border-color .2s,transform .22s,background .2s}#faceTargetList .file-row:hover{transform:translateX(2px);border-color:rgba(var(--accent-rgb),.45);background:rgba(var(--accent-rgb),.07)}
+.face-destination{display:flex;gap:12px;align-items:center;padding:14px;margin-top:19px;border:1px solid rgba(var(--accent-rgb),.3);background:#090f20a8;border-radius:14px;min-width:0}
+.face-dest-icon{display:grid;place-items:center;flex:none;width:38px;height:38px;border-radius:11px;background:rgba(var(--accent-rgb),.16);color:var(--c2);border:1px solid rgba(var(--accent-rgb),.4)}
+.face-dest-meta{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}.face-dest-meta small{font-size:10px;color:var(--muted)}.face-dest-meta strong{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr}
+.face-output-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}.face-output-actions .btn{min-height:41px;justify-content:center;padding:10px 9px;font-size:12px;white-space:nowrap}
+.face-result-status{margin-top:16px;padding:12px 13px;border:1px solid #ffffff1c;border-radius:12px;background:#081323a0;display:flex;align-items:flex-start;gap:9px;color:var(--muted);font-size:11.5px;line-height:1.4}.face-res-dot{height:7px;width:7px;margin-top:4px;border-radius:50%;background:var(--c1);box-shadow:0 0 12px var(--c1);flex:none}
+.face-open-results{width:100%;margin-top:12px;justify-content:center;min-height:41px}
+#faceOutputPanel .btn:focus-visible,#facyConnectionPanel .btn:focus-visible{outline:2px solid var(--c2);outline-offset:3px}
+@media(max-width:860px){#facyConnectionPanel .facy-actions{flex:1 1 100%;width:100%;grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:540px){#facyConnectionPanel .facy-actions{grid-template-columns:1fr}.face-output-actions{grid-template-columns:1fr}#faceTargetList.face-target-queue{max-height:220px}}
+@media(prefers-reduced-motion:reduce){.facy-inline-note,#faceTargetList .file-row{animation:none}}
+</style>
+<style id="ps7-styles">
+/* Photo Studio 7: bounded queues, interactive crop, focused dashboard */
+#page-home .workspace-grid,#page-home .workspace-footer {display:none!important}
+#page-home .workspace-heading {margin-bottom:18px}
+#page-home .module-card[data-jump="shuffle"],.nav[data-page="shuffle"],#page-shuffle{display:none!important}
+#page-home .module-grid {grid-template-columns:repeat(2,minmax(0,1fr));max-width:990px;gap:16px}
+#page-home .module-card {min-height:155px}
+.queue,#compressList,#sortFileList,#homeFileList,#faceSourceList,#faceTargetList {box-sizing:border-box;max-height:264px;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable;contain:layout style;}
+#faceSourceList{max-height:110px}
+.queue::-webkit-scrollbar,#sortFileList::-webkit-scrollbar,#compressList::-webkit-scrollbar {width:7px}
+.queue::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--c1) 55%,#1e2d47);border-radius:20px}
+#cropArea {overflow:hidden;touch-action:none;user-select:none;}
+#cropGuide {position:absolute!important;transform:none!important;box-sizing:border-box;cursor:move;touch-action:none;will-change:left,top,width,height;z-index:3;}
+#cropGuide .handle{touch-action:none;pointer-events:auto;position:absolute;width:13px;height:13px;border:2px solid #fff;background:var(--c1);border-radius:4px;box-shadow:0 0 14px var(--c1);}
+#cropGuide .handle[data-corner="nw"]{top:-7px;left:-7px;cursor:nwse-resize}
+#cropGuide .handle[data-corner="ne"]{top:-7px;right:-7px;cursor:nesw-resize}
+#cropGuide .handle[data-corner="sw"]{bottom:-7px;left:-7px;cursor:nesw-resize}
+#cropGuide .handle[data-corner="se"]{bottom:-7px;right:-7px;cursor:nwse-resize}
+#cropImage {pointer-events:none}
+.tool-output{margin-top:17px;max-width:100%;animation:ps-output-enter .42s cubic-bezier(.2,.8,.2,1)}
+.tool-output-title{display:flex;align-items:center;gap:9px;font-size:14px}
+.tool-output-title svg{color:var(--c1)}
+.tool-output-desc{margin:5px 0 12px;color:var(--muted);font-size:12px}
+.tool-output-path{padding:12px 14px;min-height:42px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid var(--line);background:rgba(8,14,26,.5);border-radius:10px;color:var(--text);font:12px/1.5 ui-monospace,monospace}
+.tool-output .toolbar-inline{display:flex;flex-wrap:wrap;gap:10px;margin-top:11px}
+.mini-stat b{font-variant-numeric:tabular-nums}
+.crop-result-panel{margin-top:16px;padding:12px;border-radius:13px;border:1px solid var(--line);background:rgba(8,16,30,.74);animation:ps-output-enter .35s ease both}
+.crop-result-panel img{display:block;max-width:100%;max-height:290px;margin:10px auto 0;object-fit:contain;border-radius:10px}
+@keyframes ps-output-enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(max-width:800px){#page-home .module-grid{grid-template-columns:1fr}}
+</style></head>
+<body>
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg"><defs>
+<symbol id="i-aperture" viewbox="0 0 24 24"><circle cx="12" cy="12" r="9.5"></circle><circle cx="12" cy="12" r="3"></circle><path d="m11 2.7 4.7 6.8M21 8l-8.1 1.6M18 20l-4.6-6.2M4 18l7.7-3M4.1 6l4.6 5.6"></path></symbol>
+<symbol id="i-grid" viewbox="0 0 24 24"><rect height="7" rx="2" width="7" x="3" y="3"></rect><rect height="7" rx="2" width="7" x="14" y="3"></rect><rect height="7" rx="2" width="7" x="3" y="14"></rect><rect height="7" rx="2" width="7" x="14" y="14"></rect></symbol>
+<symbol id="i-face" viewbox="0 0 24 24"><path d="M6 4H4a2 2 0 0 0-2 2v3m16-5h2a2 2 0 0 1 2 2v3M6 20H4a2 2 0 0 1-2-2v-3m16 5h2a2 2 0 0 0 2-2v-3"></path><circle cx="12" cy="10" r="4"></circle><path d="M6 18c.7-2.5 2.9-4 6-4s5.3 1.5 6 4"></path></symbol>
+<symbol id="i-crop" viewbox="0 0 24 24"><path d="M6 2v16a2 2 0 0 0 2 2h14M2 6h16a2 2 0 0 1 2 2v14"></path></symbol>
+<symbol id="i-compress" viewbox="0 0 24 24"><path d="m8 3 0 5H3m18 8h-5v5M3 8l7-7m11 15-7 7M10 14h4v-4h-4z"></path></symbol>
+<symbol id="i-folder" viewbox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></symbol>
+<symbol id="i-shuffle" viewbox="0 0 24 24"><path d="M3 5h3c6 0 6 14 12 14h3m-5-4 5 4-5 4M3 19h3c6 0 6-14 12-14h3m-5-4 5 4-5 4"></path></symbol>
+<symbol id="i-spark" viewbox="0 0 24 24"><path d="m12 2 2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"></path></symbol>
+<symbol id="i-terminal" viewbox="0 0 24 24"><rect height="18" rx="3" width="20" x="2" y="3"></rect><path d="m6 9 3 3-3 3m6 0h5"></path></symbol>
+<symbol id="i-check" viewbox="0 0 24 24"><path d="m4 12 5 5L20 6"></path></symbol>
+<symbol id="i-alert" viewbox="0 0 24 24"><path d="m12 2 10 19H2zM12 9v5m0 3v1"></path></symbol>
+<symbol id="i-settings" viewbox="0 0 24 24"><path d="m10 2-1 2.6-2.5.9-2.4-1.3-2 3.4 2 2-.4 3-2 1.7 2 3.4 2.6-.6 2.3 1.4.4 2.5h4l.9-2.6 2.5-.9 2.4 1.3 2-3.4-2-2 .4-3 2-1.7-2-3.4-2.6.6-2.3-1.4L14 2z"></path><circle cx="12" cy="12" r="3.1"></circle></symbol>
+<symbol id="i-arrow" viewbox="0 0 24 24"><path d="M5 19 19 5M8 5h11v11"></path></symbol>
+<symbol id="i-next" viewbox="0 0 24 24"><path d="M4 12h16m-7-7 7 7-7 7"></path></symbol>
+<symbol id="i-upload" viewbox="0 0 24 24"><path d="M12 17V3m-5 5 5-5 5 5M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"></path></symbol>
+<symbol id="i-play" viewbox="0 0 24 24"><path d="m8 4 12 8-12 8z"></path></symbol>
+<symbol id="i-pause" viewbox="0 0 24 24"><path d="M8 5v14m8-14v14"></path></symbol>
+<symbol id="i-info" viewbox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 11v6m0-10v1"></path></symbol>
+<symbol id="i-sliders" viewbox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"></path><circle cx="8" cy="6" fill="#1b1b35" r="2"></circle><circle cx="16" cy="12" fill="#1b1b35" r="2"></circle><circle cx="10" cy="18" fill="#1b1b35" r="2"></circle></symbol>
+<symbol id="i-eye" viewbox="0 0 24 24"><path d="M2 12C6 4 18 4 22 12c-4 8-16 8-20 0z"></path><circle cx="12" cy="12" r="3"></circle></symbol>
+<symbol id="i-activity" viewbox="0 0 24 24"><path d="M2 12h4l3-8 6 16 3-8h4"></path></symbol>
+<symbol id="i-image" viewbox="0 0 24 24"><rect height="18" rx="3" width="18" x="3" y="3"></rect><circle cx="9" cy="9" r="2"></circle><path d="m4 17 6-6 4 4 3-3 4 5"></path></symbol>
+<symbol id="i-up" viewbox="0 0 24 24"><path d="m5 14 7-7 7 7m-7-7v13"></path></symbol>
+<symbol id="i-search" viewbox="0 0 24 24"><circle cx="10" cy="10" r="7"></circle><path d="m16 16 6 6"></path></symbol>
+<symbol id="i-x" viewbox="0 0 24 24"><path d="m5 5 14 14M19 5 5 19"></path></symbol>
+</defs></svg>
+<div aria-hidden="true" class="progress-top" id="topProgress"></div>
+<div class="app"><aside aria-label="Навигация" class="rail">
+<div class="brand"><div class="brand-mark"><svg class="s-icon lg"><use href="#i-aperture"></use></svg></div><div><b>PHOTO STUDIO</b><small>РАБОЧЕЕ ПРОСТРАНСТВО</small></div></div>
+<div class="nav-label">Рабочее пространство</div>
+<button class="nav active" data-page="home" style="--n-rgb:166,123,255" title="Рабочая область"><svg class="s-icon"><use href="#i-grid"></use></svg><span class="nav-text">Рабочая область</span><i class="n-dot"></i></button>
+<div class="nav-label">Инструменты</div>
+<button class="nav" data-page="face" title="Face Swap"><svg class="s-icon"><use href="#i-face"></use></svg><span class="nav-text">Face Swap</span><i class="n-dot"></i></button>
+<button class="nav" data-page="crop" title="Smart Crop"><svg class="s-icon"><use href="#i-crop"></use></svg><span class="nav-text">Smart Crop</span><i class="n-dot"></i></button>
+<button class="nav" data-page="compress" title="Compress"><svg class="s-icon"><use href="#i-compress"></use></svg><span class="nav-text">Compress</span><i class="n-dot"></i></button>
+<button class="nav" data-page="sort" title="Sort"><svg class="s-icon"><use href="#i-folder"></use></svg><span class="nav-text">Sort</span><i class="n-dot"></i></button>
+<div class="nav-label">Интерфейс</div>
+<button class="nav" data-page="motion" title="Внешний вид и анимации"><svg class="s-icon"><use href="#i-sliders"></use></svg><span class="nav-text">Внешний вид и анимации</span><i class="n-dot"></i></button>
+<div class="rail-end"><div class="tiny-row"><span class="online-dot"></span><span>Локальное приложение</span></div></div>
+</aside><div class="workspace"><header class="topbar"><div class="top-caption">PHOTO STUDIO <span>/</span> <span id="currentName">РАБОЧАЯ ОБЛАСТЬ</span></div><div class="top-actions"><label aria-label="Язык интерфейса" class="ps-language-wrap"><span class="ps-lang-glyph">A文</span><select aria-label="Язык интерфейса" id="psLanguage"><option value="ru">RU</option><option value="en">EN</option><option value="uk">UA</option></select></label><button aria-label="Открыть поиск" class="search-trigger" id="searchOpen"><span>Поиск инструментов...</span><span class="key">⌘ K</span></button><button aria-label="Показать уведомление" class="icon-btn" id="toastBtn" title="Уведомление"><svg class="s-icon"><use href="#i-info"></use></svg></button><button aria-label="Настройки" class="icon-btn" data-jump="motion" title="Внешний вид и анимации"><svg class="s-icon"><use href="#i-settings"></use></svg></button></div></header>
+<main>
+<section class="page active" data-title="РАБОЧАЯ ОБЛАСТЬ" id="page-home">
+<div class="workspace-heading">
+<div><div class="eyebrow">PHOTO STUDIO / ПРОЕКТ</div><h1>Рабочая область</h1><p>Выбери свои изображения или открой инструмент для обработки.</p></div>
+<div class="workspace-status"><span class="online-dot"></span> Проект не сохранён <span class="workspace-status-sep">·</span> <span>Готово к обработке</span></div>
+</div>
+<div class="workspace-grid">
+<section aria-label="Выбор изображений" class="glass panel dashboard-drop">
+<div class="panel-title"><svg class="s-icon"><use href="#i-image"></use></svg>Файлы проекта <span class="dashboard-count" id="dashboardCount">0</span></div>
+<p class="panel-desc">Файлы обрабатываются на этом компьютере. Оригиналы не изменяются.</p>
+<input accept="image/*" hidden="" id="homeFiles" multiple="" type="file"/>
+<div aria-label="Выбрать или перетащить изображения" class="drop-zone dashboard-zone" id="homeDropZone" role="button" tabindex="0">
+<span class="upload-symbol"><svg class="s-icon lg"><use href="#i-image"></use></svg></span>
+<strong>Перетащи изображения сюда</strong><span class="drop-sub">или нажми, чтобы выбрать файлы</span>
+</div>
+<div class="files-list" id="homeFileList"><div class="empty-state">В проекте пока нет файлов</div></div>
+<div class="workspace-actions">
+<button class="btn primary" id="homePickBtn"><svg class="s-icon"><use href="#i-image"></use></svg>Добавить файлы</button>
+<button class="btn" disabled="" id="homeToCompress">Открыть в Compress</button>
+<button class="btn ghost" disabled="" id="homeClear">Очистить</button>
+</div>
+</section>
+<section aria-label="Текущая сессия" class="glass panel dashboard-side">
+<div class="panel-title"><svg class="s-icon"><use href="#i-activity"></use></svg>Текущая сессия</div>
+<div class="session-stat"><span>Выбрано файлов</span><strong id="metricFiles">0</strong></div>
+<div class="session-stat"><span>Обработка</span><span class="session-value">Не запущена</span></div>
+<div class="session-stat"><span>Результаты</span><span class="session-value">Нет</span></div>
+<div class="divider"></div>
+<div class="panel-title"><svg class="s-icon"><use href="#i-sliders"></use></svg>Анимации</div>
+<p class="panel-desc">Выбери интенсивность эффектов.</p>
+<div class="pillset dashboard-motion" data-motion-controls="">
+<button class="active" data-motion="max">MAX</button><button data-motion="balanced">BALANCED</button><button data-motion="minimal">MINIMAL</button>
+</div>
+<button class="btn tiny ghost dashboard-lab" data-jump="motion">Настроить интерфейс <svg class="s-icon"><use href="#i-next"></use></svg></button>
+</section>
+</div>
+<div class="section-head dashboard-tool-title"><div><h2>Инструменты</h2><p>Выбери действие с фотографиями.</p></div></div>
+<div class="module-grid">
+<button class="module-card" data-jump="face"><span class="module-icon"><svg class="s-icon lg"><use href="#i-face"></use></svg></span><b>Face Swap</b><small>Замена лица · очередь</small><svg class="s-icon arrow"><use href="#i-arrow"></use></svg></button>
+<button class="module-card" data-jump="crop"><span class="module-icon"><svg class="s-icon lg"><use href="#i-crop"></use></svg></span><b>Smart Crop</b><small>Кадрирование</small><svg class="s-icon arrow"><use href="#i-arrow"></use></svg></button>
+<button class="module-card" data-jump="compress"><span class="module-icon"><svg class="s-icon lg"><use href="#i-compress"></use></svg></span><b>Compress</b><small>Сжатие изображений</small><svg class="s-icon arrow"><use href="#i-arrow"></use></svg></button>
+<button class="module-card" data-jump="sort"><span class="module-icon"><svg class="s-icon lg"><use href="#i-folder"></use></svg></span><b>Sort</b><small>Распределение файлов</small><svg class="s-icon arrow"><use href="#i-arrow"></use></svg></button>
+</div>
+<div class="workspace-footer">Локальная обработка · Отдельная папка результатов · Без перезаписи исходников</div>
+</section>
+<section class="page" data-title="FACE SWAP" id="page-face"><div class="tool-header"><div><div class="eyebrow">FACE SWAP / ЗАДАЧА</div><h1 class="page-title">Face <span style="color:var(--c2)">Swap</span></h1><p class="page-sub">Выбери исходное лицо и изображения для обработки. Очередь появится после добавления файлов.</p></div><div class="inline-tags"><span class="chip dot">EXTERNAL AI / FACY</span><span class="chip">Нужна сеть</span></div></div>
+<div class="glass panel facy-connect" id="facyConnectionPanel">
+<div aria-hidden="true" class="facy-logo"><svg class="s-icon lg"><use href="#i-face"></use></svg></div>
+<div class="facy-connect-copy"><div class="panel-title">Подключение Facy AI <span class="chip" id="facyConnectionState">НЕ ПОДКЛЮЧЕНО</span></div><p>Авторизация выполняется на facy.ai в отдельном окне браузера. Пароль не передаётся Photo Studio.</p><div class="facy-connect-hint" id="facyHint">Изображения передаются в Facy AI только при запуске Face Swap.</div></div>
+<div class="facy-actions"><button class="btn primary" id="facyConnect" type="button">Подключить Facy AI</button><button class="btn" id="facyHow" type="button">Проверить вход</button><button class="btn ghost" id="facyDisconnect" type="button">Отключить</button></div>
+<div aria-live="polite" class="facy-inline-note" hidden="" id="facyInlineNote" role="status"><span class="facy-state-icon">✓</span><div class="facy-state-copy"><strong id="facyInlineTitle"></strong><span id="facyInlineDetail"></span></div></div></div>
+<div class="work-grid"><div class="stack"><div class="glass panel"><div class="panel-title"><svg class="s-icon"><use href="#i-face"></use></svg> 01. Изображение-источник</div><p class="panel-desc">Выбери исходное изображение лица для обработки.</p><div class="drop" id="faceSourceDrop" style="margin-top:18px"><div class="big-icon"><svg class="s-icon"><use href="#i-upload"></use></svg></div><strong>Перетащи фото или нажми</strong><p>Исходное изображение будет отправлено в Facy только по команде обработки.</p><input accept="image/*" aria-label="Выбрать исходное лицо" id="faceSourceInput" type="file"/></div><div class="queue" id="faceSourceList"><div class="empty-state">Исходное изображение ещё не выбрано</div></div></div>
+<div class="glass panel"><div class="panel-title"><svg class="s-icon"><use href="#i-image"></use></svg> 02. Целевые изображения</div><p class="panel-desc">Несколько файлов, удаление из очереди, понятные статусы.</p><div class="drop" id="faceTargetDrop" style="margin-top:18px;min-height:155px"><div class="big-icon"><svg class="s-icon"><use href="#i-upload"></use></svg></div><strong>Добавить изображения</strong><p>Можно добавлять файлы несколькими партиями</p><input accept="image/*" aria-label="Добавить целевые изображения" id="faceTargetInput" multiple="" type="file"/></div><div class="queue-topline"><span>Очередь изображений</span><span class="chip" id="faceTargetCount">0 файлов</span></div><div aria-label="Очередь целевых изображений" class="queue face-target-queue" id="faceTargetList" role="region" tabindex="0"><div class="empty-state">Пустая очередь · ожидаем твои файлы</div></div></div></div>
+<div class="stack"><div class="glass panel"><div class="panel-title"><svg class="s-icon"><use href="#i-activity"></use></svg> Панель выполнения</div><div class="state-line"><div><b>Статус</b><p>Запуск / проверка / получение результата</p></div><span class="chip" id="faceStatus">НЕ ЗАПУЩЕНО</span></div><div class="process"><div class="progress-rail"><div class="progress-fill" id="faceProgress"></div></div><span class="process-num" id="facePct">0%</span></div><div class="toolbar-inline"><button class="btn primary" id="faceRun"><svg class="s-icon"><use href="#i-play"></use></svg> Начать Face Swap</button><button class="btn" id="faceCancel">Отменить</button></div><div class="notice" style="margin-top:15px"><svg class="s-icon"><use href="#i-info"></use></svg><span>Реальный прогресс основан на количестве подтверждённо сохранённых результатов. Внешний сервис может ожидать дольше обычного.</span></div></div>
+<div class="glass panel face-output-panel" id="faceOutputPanel">
+<div class="panel-title"><svg class="s-icon"><use href="#i-folder"></use></svg> 03. Папка готовых свапов</div>
+<p class="panel-desc">Выбери папку, куда Photo Studio будет сохранять готовые изображения. Каждый запуск создаёт отдельную подпапку; оригиналы остаются на месте.</p>
+<div class="face-destination"><div class="face-dest-icon"><svg class="s-icon"><use href="#i-folder"></use></svg></div><div class="face-dest-meta"><small>Текущее место сохранения</small><strong id="faceOutputPath" title="">Загружаем путь…</strong></div></div>
+<div class="face-output-actions"><button class="btn primary" id="faceChooseOutput" type="button">Выбрать папку</button><button class="btn" id="faceRestoreOutput" type="button">По умолчанию</button></div>
+<div class="face-result-status" id="faceResultNote" role="status"><span class="face-res-dot"></span><span id="faceResultText">Результаты появятся в выбранной папке</span></div>
+<button class="btn face-open-results" disabled="" id="faceResultOpen" type="button">Открыть готовые свапы ↗</button>
+</div></div></div></section>
+<section class="page" data-title="SMART CROP" id="page-crop"><div class="tool-header"><div><div class="eyebrow">SMART CROP / КАДРИРОВАНИЕ</div><h1 class="page-title">Smart <span style="color:#69d3ff">Crop</span></h1><p class="page-sub">Загрузи изображение, двигай рамку, меняй пропорции или выбери свободную обрезку.</p></div><span class="chip dot">ЛОКАЛЬНЫЙ ИНСТРУМЕНТ</span></div>
+<div class="work-grid"><div class="stack"><div class="glass panel"><div class="panel-title"><svg class="s-icon"><use href="#i-crop"></use></svg> Рабочая область</div><p class="panel-desc">Добавь фотографии, настрой рамку мышью или ползунком — обрезка применится к каждому файлу.</p><div class="crop-area" id="cropArea" style="margin-top:16px"><span class="crop-label" id="cropAreaLabel">GRID / 1:1</span><img alt="Ваше загруженное фото" id="cropImage" style="display:none;position:absolute;width:100%;height:100%;object-fit:contain;inset:0;"/><div class="crop-guide" id="cropGuide"><span class="handle" data-corner="nw"></span><span class="handle" data-corner="ne"></span><span class="handle" data-corner="sw"></span><span class="handle" data-corner="se"></span></div></div><div class="toolbar-inline"><label class="btn" style="cursor:pointer"><svg class="s-icon"><use href="#i-upload"></use></svg> Добавить фотографии<input accept="image/*" hidden="" id="cropFile" multiple="" type="file"/></label><button class="btn" id="cropGrid"><svg class="s-icon"><use href="#i-grid"></use></svg> Сетка вкл/выкл</button></div><div class="ps-crop-summary" id="cropBatchSummary" role="status">В очереди: 0 фотографий · рамка применяется ко всем файлам</div><div aria-label="Очередь фотографий для пакетной обрезки" class="ps-crop-queue" id="cropBatchList"></div><button class="btn tiny ghost" id="cropClearBatch" type="button">Очистить очередь</button></div></div>
+<div class="stack"><div class="glass panel"><div class="panel-title"><svg class="s-icon"><use href="#i-sliders"></use></svg> Кадрирование</div><div class="setting"><label>Пропорция <span class="hint" id="cropRatioName">1 : 1</span></label><div class="ratio-tabs" id="cropRatios"><button data-ratio="free" id="cropFree">Свободно</button><button class="active" data-ratio="1:1">1:1</button><button data-ratio="4:5">4:5</button><button data-ratio="9:16">9:16</button><button data-ratio="16:9">16:9</button><button data-ratio="3:2">3:2</button></div></div><div class="setting"><label for="cropZoom">Масштаб рамки <span class="hint" id="cropZoomText">65%</span></label><input class="range" id="cropZoom" max="90" min="25" type="range" value="65"/></div><div class="divider"></div><div class="crop-metadata"><div class="mini-stat"><b id="cropWidthLabel">1:1</b><small>Соотношение</small></div><div class="mini-stat"><b>LOCAL</b><small>Без сети</small></div><div class="mini-stat"><b>0</b><small>Готовых файлов</small></div></div><div class="toolbar-inline"><button class="btn primary" id="cropDemo"><svg class="s-icon"><use href="#i-spark"></use></svg> Пример отклика</button></div></div><div class="notice"><svg class="s-icon"><use href="#i-info"></use></svg> Выбери фотографию, формат и масштаб. Экспорт сохранится в папке результатов.</div></div></div><div class="glass panel tool-output" data-output-kind="crop"><div class="tool-output-title"><svg class="s-icon"><use href="#i-folder"></use></svg><b>Папка результатов</b></div><p class="tool-output-desc">Готовые файлы сохраняются отдельно от оригиналов</p><div class="tool-output-path" id="cropOutputPath" title="Папка результатов">Загружаем путь…</div><div class="toolbar-inline"><button class="btn primary output-choose" data-output-kind="crop" type="button">Выбрать папку</button><button class="btn output-reset" data-output-kind="crop" type="button">По умолчанию</button><button class="btn output-open" data-output-kind="crop" disabled="" type="button">Открыть результат</button></div></div></section>
+<section class="page" data-title="COMPRESS" id="page-compress"><div class="tool-header"><div><div class="eyebrow">COMPRESS / СЖАТИЕ</div><h1 class="page-title">Compress</h1><p class="page-sub">Добавь изображения и настрой параметры сжатия.</p></div><span class="chip dot">ЛОКАЛЬНЫЙ ИНСТРУМЕНТ</span></div><div class="work-grid"><div class="stack"><div class="glass panel"><div class="panel-title"><svg class="s-icon"><use href="#i-upload"></use></svg> Изображения для обработки</div><p class="panel-desc">Выбери файлы. Обработка выполняется локально и не изменяет оригиналы.</p><div class="drop" id="compressDrop" style="margin-top:15px;min-height:220px"><div class="big-icon"><svg class="s-icon"><use href="#i-image"></use></svg></div><strong>Выбрать или перетащить фото</strong><p>PNG · JPEG · WebP / только локальное отображение</p><input accept="image/*" aria-label="Добавить изображения на сжатие" id="compressFile" multiple="" type="file"/></div><div class="queue" id="compressList"><div class="empty-state">0 выбранных файлов</div></div></div></div><div class="stack"><div class="glass panel"><div class="panel-title"><svg class="s-icon"><use href="#i-sliders"></use></svg> Параметры обработки</div><div class="setting"><label for="quality">Качество <span class="hint" id="qualityVal">82%</span></label><input class="range" id="quality" max="100" min="20" type="range" value="82"/></div><div class="setting"><label>Желаемый формат <span class="hint" id="formatVal">WebP</span></label><div class="ratio-tabs" id="formatTabs"><button data-format="JPEG">JPEG</button><button class="active" data-format="WebP">WebP</button><button data-format="PNG">PNG</button></div></div><label class="checkboxline"><input checked="" id="keepOriginal" type="checkbox"/>Не трогать исходные файлы</label><div class="divider"></div><div class="mini-stat" id="compressStats"><b id="compressSavings">—</b><small id="compressStatsDetail">После сжатия появится фактическая статистика размера.</small></div><div class="toolbar-inline"><button class="btn primary" id="compressDemo"><svg class="s-icon"><use href="#i-play"></use></svg> Сжать и сохранить</button></div><div class="process"><div class="progress-rail"><div class="progress-fill" id="compressProgress"></div></div><span class="process-num" id="compressPct">0%</span></div></div><div class="notice"><svg class="s-icon"><use href="#i-info"></use></svg> Сжатие выполняет Pillow. Результаты сохраняются в отдельной папке.</div></div></div><div class="glass panel tool-output" data-output-kind="compress"><div class="tool-output-title"><svg class="s-icon"><use href="#i-folder"></use></svg><b>Папка результатов</b></div><p class="tool-output-desc">Готовые файлы сохраняются отдельно от оригиналов</p><div class="tool-output-path" id="compressOutputPath" title="Папка результатов">Загружаем путь…</div><div class="toolbar-inline"><button class="btn primary output-choose" data-output-kind="compress" type="button">Выбрать папку</button><button class="btn output-reset" data-output-kind="compress" type="button">По умолчанию</button><button class="btn output-open" data-output-kind="compress" disabled="" type="button">Открыть результат</button></div></div></section>
+<section class="page" data-title="SORT" id="page-sort"><div class="tool-header"><div><div class="eyebrow">SORT / ПАПКИ</div><h1 class="page-title">Sort</h1><p class="page-sub">Выбери файлы и укажи количество файлов в папке.</p></div><span class="chip dot">ЛОКАЛЬНАЯ ФАЙЛОВАЯ СИСТЕМА</span></div><div class="work-grid"><div class="stack"><div class="glass panel"><div class="panel-title"><svg class="s-icon"><use href="#i-folder"></use></svg> Выбранные файлы</div><p class="panel-desc">Выбери отдельные файлы или целую папку; структура подпапок поддерживается.</p><div class="ps-folder-action"><button class="btn tiny ghost" id="sortFolderPick" type="button">Выбрать папку</button><input directory="" hidden="" id="sortFolderInput" multiple="" type="file" webkitdirectory=""/></div><div class="drop" id="sortDrop" style="min-height:210px;margin-top:15px"><div class="big-icon"><svg class="s-icon"><use href="#i-folder"></use></svg></div><strong>Выбрать файлы для распределения</strong><p>Оригиналы не перезаписываются</p><input aria-label="Выбрать файлы для сортировки" id="sortFiles" multiple="" type="file"/></div><div class="queue" id="sortFileList"><div class="empty-state">Выбери файлы, чтобы построить план папок</div></div></div></div><div class="stack"><div class="glass panel"><div class="panel-title"><svg class="s-icon"><use href="#i-grid"></use></svg> План распределения</div><div class="setting"><label for="perFolder">Файлов в одной папке <span class="hint" id="perFolderVal">5</span></label><input class="range" id="perFolder" max="250" min="1" type="range" value="5"/><input aria-label="Фотографий в одной папке" class="ps-range-number" id="perFolderNumber" inputmode="numeric" max="250" min="1" step="1" type="number" value="5"/></div><div class="folder-map" id="folderMap"><div class="folder"><svg class="s-icon"><use href="#i-folder"></use></svg><b>Group 01</b><span>Ожидает файлы</span></div></div><div class="toolbar-inline"><button class="btn primary" id="sortPreview"><svg class="s-icon"><use href="#i-eye"></use></svg> Распределить и сохранить</button></div><div class="notice" style="margin-top:14px"><svg class="s-icon"><use href="#i-alert"></use></svg> Файлы копируются в новые папки. При совпадении имён создаются уникальные имена.</div></div></div></div><div class="glass panel tool-output" data-output-kind="sort"><div class="tool-output-title"><svg class="s-icon"><use href="#i-folder"></use></svg><b>Папка результатов</b></div><p class="tool-output-desc">Готовые файлы сохраняются отдельно от оригиналов</p><div class="tool-output-path" id="sortOutputPath" title="Папка результатов">Загружаем путь…</div><div class="toolbar-inline"><button class="btn primary output-choose" data-output-kind="sort" type="button">Выбрать папку</button><button class="btn output-reset" data-output-kind="sort" type="button">По умолчанию</button><button class="btn output-open" data-output-kind="sort" disabled="" type="button">Открыть результат</button></div></div></section>
+<section class="page" data-title="ВНЕШНИЙ ВИД И АНИМАЦИИ" id="page-motion"><div class="tool-header"><div><div class="eyebrow">ИНТЕРФЕЙС / ПЕРСОНАЛИЗАЦИЯ</div><h1 class="page-title">Внешний вид и анимации</h1><p class="page-sub">Выбери два или три цвета. Изменения применяются ко всему интерфейсу сразу. Все 24 эффекта сохранены.</p></div><span class="chip dot">24 / ИНТЕРАКТИВНО</span></div>
+<div class="theme-settings">
+<section aria-label="Настройка палитры" class="glass panel theme-palette-card">
+<div class="panel-title"><svg class="s-icon"><use href="#i-sliders"></use></svg>Цветовая палитра <span class="chip" id="paletteBadge">2 ЦВЕТА</span></div>
+<p class="panel-desc">Тема влияет на навигацию, кнопки, карточки, рамки, прогресс, уведомления и эффекты. Без перезапуска.</p>
+<div class="setting-subhead">Количество цветов</div>
+<div aria-label="Количество цветов" class="pillset palette-count" id="paletteCount" role="group">
+<button aria-pressed="true" class="active" data-count="2">2 цвета</button><button aria-pressed="false" data-count="3">3 цвета</button>
+</div>
+<div class="setting-subhead">Готовые сочетания</div>
+<div aria-label="Пресеты цветовых схем" class="preset-grid" id="palettePresets" role="group"></div>
+<div class="setting-subhead">Свои цвета</div>
+<div class="color-input-grid">
+<label class="color-field"><span>Основной</span><span class="color-control"><input aria-label="Основной цвет" id="colorOne" type="color" value="#4c8dff"/><output id="hexOne">#4C8DFF</output></span></label>
+<label class="color-field"><span>Дополнительный</span><span class="color-control"><input aria-label="Дополнительный цвет" id="colorTwo" type="color" value="#69bfff"/><output id="hexTwo">#69BFFF</output></span></label>
+<label class="color-field third-color" hidden="" id="thirdColorField"><span>Третий цвет</span><span class="color-control"><input aria-label="Третий цвет" id="colorThree" type="color" value="#91a7db"/><output id="hexThree">#91A7DB</output></span></label>
+</div>
+<div aria-label="Предпросмотр цветового градиента" class="theme-bar" id="liveThemeBar"></div>
+<div class="palette-footer"><span id="paletteName">Стальной синий</span><button class="btn tiny ghost" id="resetPalette">Сбросить цвета</button></div>
+</section>
+<section aria-label="Предпросмотр стиля" class="glass panel theme-preview-card">
+<div class="panel-title"><svg class="s-icon"><use href="#i-eye"></use></svg>Живой предпросмотр</div>
+<p class="panel-desc">Наведи курсор, нажми на кнопки и измени оттенки.</p>
+<div class="live-demo-surface">
+<div class="demo-preview-head"><span class="preview-pulse"></span><b>Photo Studio / Preview</b><span class="chip">ACTIVE</span></div>
+<div class="demo-fake-tabs"><button class="active" type="button">Обработка</button><button type="button">Экспорт</button><button type="button">Файлы</button></div>
+<div class="preview-card-tile"><div class="preview-icon"><svg class="s-icon"><use href="#i-image"></use></svg></div><div><strong>Элемент интерфейса</strong><span>Цвет, бордер, glow, hover и движение</span></div><svg class="s-icon"><use href="#i-arrow"></use></svg></div>
+<div class="preview-progress"><div id="previewProgressFill"></div></div>
+<div class="toolbar-inline"><button class="btn primary" id="previewClick">Проверить отклик</button><button class="btn" id="previewToast">Уведомление</button></div>
+</div>
+<div class="divider"></div>
+<div class="panel-title"><svg class="s-icon"><use href="#i-activity"></use></svg>Анимации и эффекты</div>
+<div class="setting-subhead">Режим движения</div>
+<div class="pillset" data-motion-controls=""><button class="active" data-motion="max">MAX</button><button data-motion="balanced">BALANCED</button><button data-motion="minimal">MINIMAL</button></div>
+<div class="state-line"><div><b>Динамическое свечение</b><p>Мягкие световые акценты на кнопках и карточках</p></div><button aria-label="Переключить свечение" aria-pressed="true" class="switch on" id="glowToggle"></button></div>
+<div class="state-line"><div><b>Интенсивность подсветки</b><p>Доля свечения, без влияния на скорость прокрутки</p></div><div class="slider-with-value"><input aria-label="Интенсивность свечения" id="glowRange" max="100" min="0" type="range" value="65"/><output id="glowValue">65%</output></div></div>
+<div class="state-line"><div><b>Контраст поверхностей</b><p>Разделение карточек и фона</p></div><div class="slider-with-value"><input aria-label="Контраст поверхностей" id="contrastRange" max="100" min="0" type="range" value="50"/><output id="contrastValue">50%</output></div></div>
+</section>
+</div>
+<div class="section-head theme-lab-title"><div><h2>Лаборатория анимаций</h2><p>24 исходных эффекта. Вызываются по действию, без постоянной нагрузки на процессор.</p></div></div>
+<div class="control-strip"><strong>Режим движения</strong><div class="pillset" data-motion-controls=""><button class="active" data-motion="max">MAX</button><button data-motion="balanced">BALANCED</button><button data-motion="minimal">MINIMAL</button></div><span class="chip" id="motionNote">Все эффекты</span><button class="btn tiny" id="runRandom">Случайный эффект ↗</button></div>
+<div class="lab-grid" id="labGrid"></div><div class="section-head"><div><h2>Системные анимации</h2><p>То, что не укладывается в одну карточку: уведомления, поиск, загрузка, прокрутка и изменения состояний.</p></div></div><div class="feature-grid"><div class="glass panel"><div class="panel-title"><svg class="s-icon"><use href="#i-spark"></use></svg> Событийные эффекты</div><p class="panel-desc">Конфетти только при подтверждении; уведомление с входом и выходом; диалог с появлением и управлением клавиатурой.</p><div class="toolbar-inline"><button class="btn primary" id="labConfetti">Микро-конфетти</button><button class="btn" id="labToast">Уведомление</button><button class="btn" id="labSearch">Поиск ⌘K</button></div><div class="divider"></div><div class="panel-title">Skeleton / Загрузка</div><div class="skeleton-demo" style="margin-top:15px;width:80%"></div><div class="skeleton-demo" style="margin-top:9px;width:60%;opacity:.7"></div></div>
+<div class="glass panel"><div class="panel-title"><svg class="s-icon"><use href="#i-activity"></use></svg> Тест вложенной прокрутки</div><p class="panel-desc">Этот блок прокручивается отдельно. Весь остальной экран использует нативную прокрутку браузера без JavaScript-перехвата колёсика.</p><div class="scroll-demo" style="margin-top:15px"><div class="scroller-content"><b>НАЧАЛО ↓</b><b>ПЛАВНО, БЕЗ ПЕРЕЗАПУСКОВ</b><b>КОНЕЦ ✓</b></div></div></div></div></section>
+</main></div></div>
+<div aria-live="polite" class="toast-stack" id="toastStack"></div><button aria-label="Наверх" class="back-top" id="backTop" title="Наверх"><svg class="s-icon"><use href="#i-up"></use></svg></button>
+<div aria-label="Быстрый переход" aria-modal="true" class="overlay" id="commandOverlay" role="dialog"><div class="command"><input autocomplete="off" id="commandInput" placeholder="Найти инструмент, действие или раздел..." type="search"/><div class="command-results" id="commandResults"></div><div class="command-foot">↑ ↓ или мышь · Enter выбрать · Esc закрыть · ⌘K / Ctrl+K открыть</div></div></div>
+<script>
+(()=>{
+  // Restore preferences before the visual engine starts, even if the port changed.
+  const prefs=__PS_INITIAL_PREFERENCES__;
+  try{
+    if(prefs.theme)localStorage.setItem('photostudio.hyper.theme.v1',JSON.stringify(prefs.theme));
+    if(prefs.language)localStorage.setItem('photo.studio.language',prefs.language);
+  }catch(e){}
+  const nativeSet=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(k,v){
+    const out=nativeSet.call(this,k,v);
+    if(k==='photostudio.hyper.theme.v1'||k==='photo.studio.language'){
+      let data={};
+      try{data=k==='photo.studio.language'?{language:v}:{theme:JSON.parse(v)}}catch(_){return out}
+      fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json','X-PhotoStudio-Token':'__PS_RUNTIME_TOKEN__'},body:JSON.stringify(data)}).catch(()=>{});
+    }
+    return out;
+  };
+})();
+</script>
+<script>'use strict';
+(() => {
+ const $ = s => document.querySelector(s);
+ const $$ = s => Array.from(document.querySelectorAll(s));
+ const icons = {check:'i-check',info:'i-info',spark:'i-spark',alert:'i-alert',image:'i-image',folder:'i-folder'};
+ const icon=(name,cls='')=>`<svg class="s-icon ${cls}" aria-hidden="true"><use href="#${icons[name]||name}"/></svg>`;
+ const pages = [{id:'home',title:'Рабочая область',key:'1'},{id:'face',title:'Face Swap',key:'2'},{id:'crop',title:'Smart Crop',key:'3'},{id:'compress',title:'Compress',key:'4'},{id:'sort',title:'Sort',key:'5'},{id:'motion',title:'Внешний вид и анимации',key:'6'}];
+ 
+ let current='home',motion='max',glow=true,cmdOpen=false;
+ const urlRegistry=new WeakMap();
+ const selected={home:[],faceSource:[],faceTarget:[],crop:[],compress:[],sort:[],shuffle:[]};
+ window.PhotoStudioSelected=selected;
+ const activeTimers={};
+ function setPage(id){ if(!pages.some(p=>p.id===id))return; if(current!==id){for(const key of ['face','compress']){if(activeTimers[key]){clearInterval(activeTimers[key]);activeTimers[key]=null;const run=$('#'+(key==='face'?'faceRun':'compressDemo'));if(run)run.disabled=false;const status=$('#'+key+'Status');if(status)status.textContent='DEMO ОСТАНОВЛЕНО';}}}current=id;
+   $$('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+id));
+   $$('.nav').forEach(n=>{n.classList.toggle('active',n.dataset.page===id);n.setAttribute('aria-current',n.dataset.page===id?'page':'false')});
+   const p=pages.find(x=>x.id===id);$('#currentName').textContent=p.title.toUpperCase();
+   
+   window.scrollTo({top:0,behavior:'auto'}); updateScroll();closeCmd(false);
+ }
+ $$('[data-page]').forEach(btn=>btn.addEventListener('click',()=>setPage(btn.dataset.page)));
+ $$('[data-jump]').forEach(btn=>btn.addEventListener('click',()=>setPage(btn.dataset.jump)));
+ function showToast(message,kind='info'){
+   const stack=$('#toastStack'),t=document.createElement('div');t.className='toast';t.setAttribute('role','status');
+   const symbol=document.createElement('span');symbol.innerHTML=icon(kind==='error'?'alert':kind==='success'?'check':'info');t.append(symbol);
+   const txt=document.createElement('span');txt.textContent=message;t.append(txt);stack.append(t);
+   setTimeout(()=>{t.classList.add('toast-out');setTimeout(()=>t.remove(),270)},Math.max(3000,Math.min(6300,2600+message.length*18)));
+ }
+ function updateScroll(){const total=document.documentElement.scrollHeight-innerHeight;const value=total>0?Math.min(100,Math.max(0,scrollY/total*100)):0;$('#topProgress').style.width=value+'%';$('#backTop').classList.toggle('show',scrollY>520)}
+ addEventListener('scroll',updateScroll,{passive:true});addEventListener('resize',updateScroll,{passive:true});
+ $('#backTop').addEventListener('click',()=>window.scrollTo({top:0,behavior:motion==='minimal'?'auto':'smooth'}));
+ document.addEventListener('click',e=>{const btn=e.target.closest('.btn,.icon-btn,.module-card');if(!btn||btn.disabled||motion==='minimal')return;const rect=btn.getBoundingClientRect();const size=Math.max(rect.width,rect.height),dot=document.createElement('span');dot.className='ripple';dot.style.width=size+'px';dot.style.height=size+'px';dot.style.left=(e.clientX-rect.left-size/2)+'px';dot.style.top=(e.clientY-rect.top-size/2)+'px';btn.append(dot);setTimeout(()=>dot.remove(),650)});
+ function setMotion(value){motion=value;document.body.classList.toggle('low-motion',value==='minimal');document.body.classList.toggle('balanced-motion',value==='balanced');$$('[data-motion-controls] button').forEach(b=>b.classList.toggle('active',b.dataset.motion===value));$('#motionNote').textContent= value==='max'?'Все эффекты':value==='balanced'?'Анимация короче':'Минимум движения';showToast('Режим анимаций: '+({max:'MAX',balanced:'BALANCED',minimal:'MINIMAL'}[value]));}
+ $$('[data-motion-controls] button').forEach(b=>b.addEventListener('click',()=>setMotion(b.dataset.motion)));
+ $('#glowToggle').addEventListener('click',e=>{glow=!glow;document.body.classList.toggle('no-glow',!glow);e.currentTarget.classList.toggle('on',glow);e.currentTarget.setAttribute('aria-pressed',String(glow));showToast('Свечение '+(glow?'включено':'отключено'))});
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches){motion='minimal';document.body.classList.add('low-motion');$$('[data-motion-controls] button').forEach(b=>b.classList.toggle('active',b.dataset.motion==='minimal'));$('#motionNote').textContent='Системное уменьшение движения';}
+ // Keyboard command palette
+ const overlay=$('#commandOverlay'),search=$('#commandInput'),results=$('#commandResults');let commandItems=[];
+ function commandsFor(term){const q=term.trim().toLowerCase();return pages.filter(p=>!q||p.title.toLowerCase().includes(q)||p.id.includes(q))}
+ function renderCmd(){commandItems=commandsFor(search.value);results.replaceChildren();if(!commandItems.length){const d=document.createElement('div');d.className='empty-state';d.textContent='Ничего не найдено';results.append(d);return}
+   commandItems.forEach((p,i)=>{const b=document.createElement('button');b.type='button';b.innerHTML=icon('i-next')+'<span></span><span class="key" style="margin-left:auto">'+p.key+'</span>';b.querySelector('span').textContent=p.title;b.addEventListener('click',()=>setPage(p.id));results.append(b)});
+ }
+ function openCmd(){cmdOpen=true;overlay.classList.add('open');search.value='';renderCmd();setTimeout(()=>search.focus(),0)}
+ function closeCmd(restore=true){if(!cmdOpen)return;cmdOpen=false;overlay.classList.remove('open');if(restore)$('#searchOpen').focus()}
+ $('#searchOpen').addEventListener('click',openCmd);$('#labSearch').addEventListener('click',openCmd);overlay.addEventListener('click',e=>{if(e.target===overlay)closeCmd()});search.addEventListener('input',renderCmd);
+ search.addEventListener('keydown',e=>{if(e.key==='Enter'&&commandItems.length){setPage(commandItems[0].id)}else if(e.key==='ArrowDown'){const btn=results.querySelector('button');if(btn){e.preventDefault();btn.focus()}}});
+ results.addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();const btns=$$('#commandResults button');let idx=btns.indexOf(document.activeElement);idx+=e.key==='ArrowDown'?1:-1;btns[(idx+btns.length)%btns.length]?.focus()}});
+ document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();cmdOpen?closeCmd():openCmd()}else if(e.key==='Escape')closeCmd();else if(e.altKey&&!e.metaKey&&!e.ctrlKey&&/^\d$/.test(e.key)&&e.key!=='0'&&!cmdOpen){e.preventDefault();setPage(pages[Number(e.key)-1]?.id)}});
+ $('#toastBtn').addEventListener('click',()=>showToast('Уведомления Photo Studio — пример анимированного состояния'));
+ function confettiFrom(el){if(motion==='minimal'){showToast('Действие подтверждено ✓','success');return}const r=el.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;for(let i=0;i<28;i++){const a=document.createElement('i');a.className='confetti';a.style.left=x+'px';a.style.top=y+'px';a.style.background=['var(--c1)','var(--c2)','var(--mix3)','var(--c1)','var(--c2)'][i%5];a.style.setProperty('--x',((Math.random()-.5)*350)+'px');a.style.setProperty('--y',((Math.random()-.5)*280+85)+'px');a.style.setProperty('--r',(Math.random()*850)+'deg');document.body.append(a);setTimeout(()=>a.remove(),980)}}
+ ['labConfetti'].forEach(id=>$('#'+id).addEventListener('click',e=>{confettiFrom(e.currentTarget);showToast('Небольшой эффект подтверждения','success')}));
+ ['labToast'].forEach(id=>$('#'+id).addEventListener('click',()=>showToast('Пример уведомления. Все действия под контролем ✓','success')));
+ // File selection: demo only uses transient object URLs, never sends data to server.
+ function bytes(n){return n>1024*1024?(n/(1024*1024)).toFixed(1)+' МБ':Math.max(1,Math.round(n/1024))+' КБ'}
+ function revokeFile(file){const url=urlRegistry.get(file);if(url){URL.revokeObjectURL(url);urlRegistry.delete(file)}}
+ function fileRow(file,onRemove){const row=document.createElement('div');row.className='file-row';const thumb=document.createElement('div');thumb.className='file-thumbnail';if(file.type.startsWith('image/')){const image=document.createElement('img');image.alt='';let url=urlRegistry.get(file);if(!url){url=URL.createObjectURL(file);urlRegistry.set(file,url)}image.src=url;thumb.append(image)}else thumb.innerHTML=icon('folder');const name=document.createElement('div');name.className='file-name';name.textContent=file.name;name.title=file.name;const meta=document.createElement('span');meta.className='file-meta';meta.textContent=bytes(file.size);const btn=document.createElement('button');btn.className='remove-file';btn.type='button';btn.setAttribute('aria-label','Удалить '+file.name);btn.innerHTML=icon('i-x','sm');btn.addEventListener('click',onRemove);row.append(thumb,name,meta,btn);return row}
+ function renderFaceQueue(key,id){
+   const root=$('#'+id),list=selected[key];
+   const top=root.scrollTop;
+   root.replaceChildren();root.style.display='block';
+   if(!list.length){root.append(Object.assign(document.createElement('div'),{className:'empty-state',textContent:'Файлы ещё не выбраны'}));return;}
+   const stride=66;
+   const spacer=document.createElement('div');spacer.className='face-virtual-spacer';spacer.style.cssText='height:'+list.length*stride+'px;position:relative;pointer-events:none';
+   const layer=document.createElement('div');layer.className='face-virtual-layer';layer.style.cssText='position:absolute;inset:0 0 auto 0;pointer-events:none';
+   root.style.position='relative';root.append(spacer,layer);root.scrollTop=Math.min(top,Math.max(0,list.length*stride-root.clientHeight));
+   function draw(){
+      if(!layer.isConnected)return;
+      const first=Math.max(0,Math.floor(root.scrollTop/stride)-2);
+      const last=Math.min(list.length,Math.ceil((root.scrollTop+root.clientHeight)/stride)+3);
+      if(root._psRange&&root._psRange[0]===first&&root._psRange[1]===last)return;
+      const nextFiles=new Set(list.slice(first,last));
+      for(const oldRow of layer.querySelectorAll('.file-row')){
+         if(oldRow._psFile&&!nextFiles.has(oldRow._psFile))revokeFile(oldRow._psFile);
+      }
+      root._psRange=[first,last];layer.replaceChildren();
+      for(let i=first;i<last;i++){
+         const file=list[i];if(!file)continue;
+         const row=fileRow(file,()=>{selected[key].splice(i,1);if(!Object.values(selected).some(a=>a.includes(file)))revokeFile(file);renderFiles(key,id);updateCount();if(key==='sort')updateSort();if(key==='crop'){$('#cropBatchSummary').textContent='В очереди: '+selected.crop.length+' фотографий · рамка применяется ко всем';$('#cropBatchList').classList.toggle('has-files',selected.crop.length>0)}});
+         row._psFile=file;
+         row.style.cssText='position:absolute;left:0;right:0;top:'+(i*stride)+'px;height:58px;pointer-events:auto';
+         layer.append(row);
+      }
+   }
+   root._psRange=null;root._psDraw=draw;draw();
+   if(!root._psAttached){root._psAttached=true;root.addEventListener('scroll',()=>{if(root._psRaf)return;root._psRaf=requestAnimationFrame(()=>{root._psRaf=null;root._psDraw?.()})},{passive:true})}
+ }
+ function renderFiles(key,id){if(['faceTarget','crop','compress','sort','home'].includes(key))return renderFaceQueue(key,id);const root=$('#'+id);root.replaceChildren();const list=selected[key];if(!list.length){const d=document.createElement('div');d.className='empty-state';d.textContent=key==='faceSource'?'Исходное изображение ещё не выбрано':'Файлы ещё не выбраны';root.append(d)}else list.forEach((file,i)=>root.append(fileRow(file,()=>{selected[key].splice(i,1);if(!Object.values(selected).some(a=>a.includes(file)))revokeFile(file);renderFiles(key,id);updateCount();if(key==='sort')updateSort();if(key==='crop'){$('#cropBatchSummary').textContent='В очереди: '+selected.crop.length+' фотографий · рамка применяется ко всем';$('#cropBatchList').classList.toggle('has-files',selected.crop.length>0)}})));}
+ function updateCount(){const n=new Set(Object.values(selected).flat()).size;$('#metricFiles').textContent=n;$('#dashboardCount').textContent=selected.home.length;$('#homeToCompress').disabled=!selected.home.length;$('#homeClear').disabled=!selected.home.length}
+ function bindFiles(inputId,key,listId,multiple=false){const input=$('#'+inputId);input.addEventListener('change',()=>{const raw=Array.from(input.files||[]);if(!raw.length)return;
+  const files=key==='sort'||key==='shuffle'?raw:raw.filter(f=>f.type.startsWith('image/'));if(files.length!==raw.length)showToast('Часть файлов пропущена: нужны изображения','error');if(!files.length){input.value='';return}
+  if(!multiple){selected[key].forEach(revokeFile);selected[key]=[files[0]]}else selected[key].push(...files);renderFiles(key,listId);updateCount();if(key==='sort')updateSort();input.value='';showToast('Добавлено файлов: '+files.length,'success')});
+  const zone=input.closest('.drop');if(zone){['dragenter','dragover'].forEach(evt=>zone.addEventListener(evt,e=>{e.preventDefault();zone.classList.add('drag-over')}));['dragleave','drop'].forEach(evt=>zone.addEventListener(evt,e=>{e.preventDefault();zone.classList.remove('drag-over')}));zone.addEventListener('drop',e=>{const raw=Array.from(e.dataTransfer.files||[]);const files=key==='sort'?raw:raw.filter(f=>f.type.startsWith('image/'));if(!files.length){showToast('Выбери подходящие файлы','error');return}if(!multiple){selected[key].forEach(revokeFile);selected[key]=[files[0]]}else selected[key].push(...files);renderFiles(key,listId);updateCount();if(key==='sort')updateSort();showToast('Перетащено файлов: '+files.length,'success')})}
+ }
+
+ // Dashboard: user-selected images only; no stock content or fake jobs.
+ const homeInput=$('#homeFiles'),homeZone=$('#homeDropZone');
+ function addHomeFiles(files){const valid=Array.from(files||[]).filter(f=>f.type.startsWith('image/'));if(!valid.length){showToast('Выбери изображения','error');return}selected.home.push(...valid);renderFiles('home','homeFileList');updateCount();showToast('Добавлено файлов: '+valid.length,'success')}
+ $('#homePickBtn').addEventListener('click',()=>homeInput.click());
+ homeZone.addEventListener('click',()=>homeInput.click());
+ homeZone.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();homeInput.click()}});
+ homeInput.addEventListener('change',()=>{addHomeFiles(homeInput.files);homeInput.value=''});
+ ['dragenter','dragover'].forEach(t=>homeZone.addEventListener(t,e=>{e.preventDefault();homeZone.classList.add('drag-over')}));
+ ['dragleave','drop'].forEach(t=>homeZone.addEventListener(t,e=>{e.preventDefault();homeZone.classList.remove('drag-over')}));
+ homeZone.addEventListener('drop',e=>addHomeFiles(e.dataTransfer.files));
+ $('#homeClear').addEventListener('click',()=>{selected.home.forEach(f=>{if(!Object.values(selected).some(a=>a!==selected.home&&a.includes(f)))revokeFile(f)});selected.home=[];renderFiles('home','homeFileList');updateCount();showToast('Выбранные файлы убраны из рабочей области')});
+ $('#homeToCompress').addEventListener('click',()=>{selected.home.forEach(f=>{if(!selected.compress.includes(f))selected.compress.push(f)});renderFiles('compress','compressList');updateCount();setPage('compress')});
+ updateCount();
+
+ bindFiles('faceSourceInput','faceSource','faceSourceList');bindFiles('faceTargetInput','faceTarget','faceTargetList',true);bindFiles('compressFile','compress','compressList',true);bindFiles('sortFiles','sort','sortFileList',true);
+ window.PhotoStudioSyncFiles=(kind)=>{const map={sort:'sortFileList',compress:'compressList',faceTarget:'faceTargetList'};if(map[kind])renderFiles(kind,map[kind]);updateCount();if(kind==='sort')updateSort()};
+ // simulated progress — explicitly demo
+ function simulate(tag,btn){const bar=$('#'+tag+'Progress'),pct=$('#'+tag+'Pct');if(activeTimers[tag]){showToast('Демонстрация уже выполняется');return}let progress=0;btn.disabled=true;const status=$('#'+tag+'Status');if(status)status.textContent='DEMO';
+ activeTimers[tag]=setInterval(()=>{progress=Math.min(100,progress+Math.max(2,Math.ceil(Math.random()*8)));bar.style.width=progress+'%';pct.textContent=progress+'%';if(progress>=100){clearInterval(activeTimers[tag]);activeTimers[tag]=null;btn.disabled=false;if(status)status.textContent='DEMO ГОТОВО';showToast('Анимация завершена. Файл не обрабатывался.','success')}},180)}
+ $('#faceRun').addEventListener('click',()=>{if(!selected.faceSource.length||!selected.faceTarget.length){showToast('Выбери своё исходное и хотя бы одно целевое изображение','error');return}simulate('face',$('#faceRun'))});
+ $('#faceCancel').addEventListener('click',()=>{if(activeTimers.face){clearInterval(activeTimers.face);activeTimers.face=null;$('#faceRun').disabled=false;$('#faceStatus').textContent='ОТМЕНЕНО';showToast('Демо-процесс отменён')}else showToast('Нет запущенного демо')});
+ $('#compressDemo').addEventListener('click',()=>{if(!selected.compress.length){showToast('Сначала выбери изображения','error');return}simulate('compress',$('#compressDemo'))});
+ $('#quality').addEventListener('input',e=>$('#qualityVal').textContent=e.target.value+'%');
+ $$('#formatTabs button').forEach(b=>b.addEventListener('click',()=>{$$('#formatTabs button').forEach(x=>x.classList.toggle('active',x===b));$('#formatVal').textContent=b.dataset.format}));
+ // crop technical frame, no preview until user chooses photo
+ const ratios={'1:1':[1,1],'4:5':[4,5],'9:16':[9,16],'16:9':[16,9],'3:2':[3,2]};
+ let cropRatio='1:1',zoom=65,selection={x:.2,y:.2,w:.6,h:.6},drag=null;
+ const cropArea=$('#cropArea'),cropGuide=$('#cropGuide'),cropImg=$('#cropImage');
+ const cropFree=$('#cropFree');
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+ function imageBounds(){const W=cropArea.clientWidth,H=cropArea.clientHeight;
+   const iw=cropImg.naturalWidth||W,ih=cropImg.naturalHeight||H;
+   const scale=Math.min(W/iw,H/ih);return {left:(W-iw*scale)/2,top:(H-ih*scale)/2,width:iw*scale,height:ih*scale};}
+ function applyCrop(){
+   const r=imageBounds();
+   cropGuide.style.left=(r.left+selection.x*r.width)+'px';
+   cropGuide.style.top=(r.top+selection.y*r.height)+'px';
+   cropGuide.style.width=(selection.w*r.width)+'px';
+   cropGuide.style.height=(selection.h*r.height)+'px';
+   $('#cropAreaLabel').textContent=(cropRatio==='free'?'FREE / ':'GRID / ')+cropRatio;
+   $('#cropRatioName').textContent=cropRatio==='free'?'FREE':cropRatio.replace(':',' : ');
+   $('#cropWidthLabel').textContent=cropRatio==='free'?'FREE':cropRatio;
+   $('#cropZoomText').textContent=Math.round(zoom)+'%';
+   window.PhotoStudioCropSelection={...selection};
+ }
+ function chooseRatio(key){
+   cropRatio=key;$$('#cropRatios button').forEach(b=>b.classList.toggle('active',b.dataset.ratio===key));
+   if(key!=='free'){const [a,b]=ratios[key];const rect=imageBounds();const ar=a/b;let w=clamp(zoom/100,.1,.95),h=w*rect.width/(ar*rect.height);
+     if(h>.95){h=.95;w=h*ar*rect.height/rect.width}
+     selection={x:(1-w)/2,y:(1-h)/2,w,h};
+   }else if(key==='free'){
+     // Use the slider to resize free selection rather than leaving it unchanged.
+     const width=clamp(zoom/100,.1,.95), previous=Math.max(.05,selection.w);
+     const height=clamp(selection.h*width/previous,.08,.95);
+     const cx=selection.x+selection.w/2,cy=selection.y+selection.h/2;
+     selection={x:clamp(cx-width/2,0,1-width),y:clamp(cy-height/2,0,1-height),w:width,h:height};
+   }applyCrop();
+ }
+ $$('#cropRatios button').forEach(b=>b.addEventListener('click',()=>chooseRatio(b.dataset.ratio)));
+ $('#cropZoom').addEventListener('input',e=>{zoom=Number(e.target.value);chooseRatio(cropRatio)});
+ $('#cropGrid').addEventListener('click',()=>{cropGuide.classList.toggle('no-grid');});
+ function updateCropBatch(){
+   $('#cropBatchSummary').textContent='В очереди: '+selected.crop.length+' фотографий · рамка применяется ко всем';
+   $('#cropBatchList').classList.toggle('has-files',selected.crop.length>0);
+   renderFiles('crop','cropBatchList');updateCount();
+ }
+ function addCropPhotos(raw){
+   const files=Array.from(raw||[]).filter(f=>f.type.startsWith('image/') || /\.(jpe?g|png|webp|bmp|tiff?)$/i.test(f.name));
+   if(!files.length){showToast('Выбери изображения','error');return}
+   if(selected.crop.length+files.length>10000){showToast('Лимит одной очереди: 10 000 изображений','error');return}
+   selected.crop.push(...files);
+   // Show a single preview; never decode thousands of photos simultaneously.
+   if(!cropImg.naturalWidth||selected.crop.length===files.length)previewCropFile(selected.crop[0]);
+   updateCropBatch();showToast('Добавлено фото: '+files.length,'success');
+ }
+ function previewCropFile(file){
+   if(!file)return;
+   if(cropImg.dataset.objectUrl)URL.revokeObjectURL(cropImg.dataset.objectUrl);
+   const url=URL.createObjectURL(file);cropImg.dataset.objectUrl=url;
+   cropImg.onload=()=>{chooseRatio(cropRatio)};
+   cropImg.src=url;cropImg.style.display='block';
+ }
+ $('#cropFile').addEventListener('change',e=>{
+   addCropPhotos(e.target.files);e.target.value='';
+ });
+ $('#cropClearBatch').addEventListener('click',()=>{
+   selected.crop.forEach(revokeFile);selected.crop=[];
+   if(cropImg.dataset.objectUrl){URL.revokeObjectURL(cropImg.dataset.objectUrl);delete cropImg.dataset.objectUrl}
+   cropImg.removeAttribute('src');cropImg.style.display='none';updateCropBatch();
+ });
+ for(const evt of ['dragenter','dragover'])cropArea.addEventListener(evt,e=>{e.preventDefault()});
+ cropArea.addEventListener('drop',e=>{e.preventDefault();addCropPhotos(e.dataTransfer.files)});
+ updateCropBatch();
+ function onMove(e){if(!drag)return;const r=imageBounds();const dx=(e.clientX-drag.px)/r.width,dy=(e.clientY-drag.py)/r.height;
+   let {x,y,w,h}=drag.origin;
+   if(drag.mode==='move'){x=clamp(x+dx,0,1-w);y=clamp(y+dy,0,1-h)}
+   else{
+     const minW=Math.max(16/r.width,.02),minH=Math.max(16/r.height,.02);
+     if(drag.mode.includes('e'))w=clamp(w+dx,minW,1-x);
+     if(drag.mode.includes('s'))h=clamp(h+dy,minH,1-y);
+     if(drag.mode.includes('w')){const nx=clamp(x+dx,0,x+w-minW);w+=x-nx;x=nx;}
+     if(drag.mode.includes('n')){const ny=clamp(y+dy,0,y+h-minH);h+=y-ny;y=ny;}
+     // Free mode allows independent resizing. Any manual resize switches to FREE.
+     cropRatio='free';$$('#cropRatios button').forEach(b=>b.classList.toggle('active',b.dataset.ratio==='free'));
+   }
+   selection={x,y,w,h}; if(drag.mode!=='move'){zoom=clamp(Math.round(w*100),25,90);$('#cropZoom').value=zoom;}applyCrop();
+ }
+ cropGuide.addEventListener('pointerdown',e=>{if(!cropImg.naturalWidth)return;
+   drag={mode:e.target.dataset.corner||'move',px:e.clientX,py:e.clientY,origin:{...selection}};
+   cropGuide.setPointerCapture(e.pointerId);e.preventDefault();
+ });
+ cropGuide.addEventListener('pointermove',onMove);
+ for(const endEvent of ['pointerup','pointercancel','lostpointercapture'])cropGuide.addEventListener(endEvent,()=>drag=null);
+ addEventListener('resize',applyCrop,{passive:true});
+ chooseRatio('1:1');
+ $('#cropDemo').addEventListener('click',e=>{if(!cropImg.naturalWidth)showToast('Сначала загрузи фото','error')});
+ // Sort: actual file counts, preview only
+ const sortRange=$('#perFolder'),sortNumber=$('#perFolderNumber');
+ function updatePerFolder(raw){const n=clamp(Number(raw)||1,1,250);sortRange.value=n;sortNumber.value=n;$('#perFolderVal').textContent=n;updateSort()}
+ sortRange.addEventListener('input',e=>updatePerFolder(e.target.value));
+ sortNumber.addEventListener('input',e=>{if(e.target.value!=='')updatePerFolder(e.target.value)});
+ sortNumber.addEventListener('change',e=>updatePerFolder(e.target.value));
+ function updateSort(){const arr=selected.sort;const per=Number($('#perFolder').value);const n=Math.ceil(arr.length/per);const root=$('#folderMap');root.replaceChildren();if(n===0){const d=document.createElement('div');d.className='folder';d.innerHTML=icon('folder')+'<b>Group 01</b><span>Ожидает файлы</span>';root.append(d);return}
+ for(let i=0;i<Math.min(n,15);i++){const d=document.createElement('div');d.className='folder';d.innerHTML=icon('folder')+'<b>Group '+String(i+1).padStart(2,'0')+'</b><span></span>';d.querySelector('span').textContent=Math.min(per,arr.length-i*per)+' файлов';root.append(d)}if(n>15){const d=document.createElement('div');d.className='folder';d.textContent='… +'+(n-15)+' папок';root.append(d)}}
+ $('#sortPreview').addEventListener('click',()=>selected.sort.length?showToast('План создан: '+Math.ceil(selected.sort.length/Number($('#perFolder').value))+' папок. Записи на диск нет.','success'):showToast('Выбери файлы для построения плана','error'));
+ // Motion Lab. Every effect has a CSS implementation bound to the click state.
+ const effects=[
+ ['lift','Hover Lift','Подъём / возврат'],['glow','Neon Glow','Пульс свечения'],['spin','Icon Rotate','Вращение иконки'],['squish','Squish Press','Упругое сжатие'],
+ ['flip','Flip 3D','Переворот карточки'],['shake','Error Shake','Ошибочный отклик'],['wave','Elastic Wave','Упругая волна'],['morph','Shape Morph','Изменение формы'],
+ ['slide','Slide In','Скольжение блока'],['tilt','3D Tilt','Ось X / Y'],['hue','Hue Spectrum','Перелив цвета'],['orbit','Orbit Motion','Орбитальное движение'],
+ ['blur','Focus Reveal','Переход резкости'],['bounce','Spring Bounce','Физика пружины'],['pulse','Soft Pulse','Пульсация статуса'],['wobble','Wobble','Качание значка'],
+ ['expand','Stretch','Горизонтальный отклик'],['zoom','Zoom In','Лёгкое увеличение'],['reveal','Mask Reveal','Масочное появление'],['ripple','Focus Ripple','Кольцо действия'],
+ ['float','Levitation','Мягкое парение'],['shear','Perspective Shift','Сдвиг поверхности'],['border','Border Morph','Акцентная рамка'],['flash','Success Flash','Момент успеха']
+ ];
+ const grid=$('#labGrid');effects.forEach((e,i)=>{const b=document.createElement('button');b.type='button';b.className='lab-item';b.dataset.effect=e[0];b.setAttribute('aria-label','Воспроизвести '+e[1]);b.innerHTML='<div><small>FX '+String(i+1).padStart(2,'0')+' / CLICK TO PLAY</small><div class="effect-visual"><span class="visual">'+icon('spark')+'</span></div></div><div><b></b><p></p></div>';b.querySelector('b').textContent=e[1];b.querySelector('p').textContent=e[2];grid.append(b);
+ b.addEventListener('click',()=>{if(motion==='minimal'){showToast('В режиме MINIMAL эффект выключен');return}b.classList.remove('running');void b.offsetWidth;b.classList.add('running');setTimeout(()=>b.classList.remove('running'),1150)})});
+ $('#runRandom').addEventListener('click',()=>grid.children[Math.floor(Math.random()*grid.children.length)].click());
+ // Keep status honest: offline, no downloads, no service calls.
+
+ // Palette engine: whole-interface theme, locally persisted, two or three colors.
+ const themePresets = [
+  {id:'steel',name:'Стальной синий',colors:['#4c8dff','#69bfff','#91a7db'],count:2},
+  {id:'deep',name:'Глубокий океан',colors:['#286bdc','#1cbdcf','#7cabc9'],count:2},
+  {id:'ice',name:'Северное сияние',colors:['#4b98e8','#7fd6d5','#9caedb'],count:3},
+  {id:'titan',name:'Титан',colors:['#a7bfd8','#678caf','#c5d1e4'],count:2},
+  {id:'emerald',name:'Хром и мята',colors:['#308bda','#2ccaa5','#9bcce2'],count:3},
+  {id:'orange',name:'Сталь и янтарь',colors:['#578fea','#f0ae61','#abcbe4'],count:2},
+  {id:'purple',name:'Ультрафиолет',colors:['#8058ed','#3eb8ff','#d8a0ff'],count:3},
+  {id:'custom',name:'Твой вариант',colors:['#4c8dff','#69bfff','#91a7db'],count:2}
+ ];
+ const defaultTheme=themePresets[0];
+ let palette={colors:[...defaultTheme.colors],count:2,preset:'steel',glowStrength:65,contrast:50};
+ const rgb=hex=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)).join(',');
+ const root=document.documentElement;
+ function savePalette(){try{localStorage.setItem('photostudio.hyper.theme.v1',JSON.stringify(palette))}catch(_){}}
+ function updatePalette(){
+   const [a,b,c]=palette.colors;
+   root.style.setProperty('--c1',a);root.style.setProperty('--c2',b);root.style.setProperty('--c3',c);
+   root.style.setProperty('--c1-rgb',rgb(a));root.style.setProperty('--c2-rgb',rgb(b));root.style.setProperty('--c3-rgb',rgb(c));
+   root.style.setProperty('--mix3',palette.count===3?c:b);
+   root.style.setProperty('--accent',a);root.style.setProperty('--accent-rgb',rgb(a));
+   root.style.setProperty('--theme-gradient',palette.count===3?`linear-gradient(112deg,${a},${b} 52%,${c})`:`linear-gradient(112deg,${a},${b})`);
+   root.style.setProperty('--glow-scale',palette.glowStrength/100);
+   root.style.setProperty('--contrast-scale',palette.contrast/100);
+   const surface=Math.round(26+palette.contrast*.11);root.style.setProperty('--panel-hi',`rgb(${surface-6},${surface+2},${surface+16})`);
+   root.style.setProperty('--button-glow',`0 10px ${Math.round(14+palette.glowStrength*.28)}px rgba(${rgb(a)},${(palette.glowStrength/100*.48).toFixed(2)})`);
+   $('#colorOne').value=a;$('#colorTwo').value=b;$('#colorThree').value=c;
+   $('#hexOne').value=a.toUpperCase();$('#hexTwo').value=b.toUpperCase();$('#hexThree').value=c.toUpperCase();
+   $('#paletteBadge').textContent=palette.count+' ЦВЕТА';
+   $('#thirdColorField').hidden=palette.count!==3;
+   $$('#paletteCount button').forEach(x=>{const on=Number(x.dataset.count)===palette.count;x.classList.toggle('active',on);x.setAttribute('aria-pressed',String(on))});
+   $$('#palettePresets button').forEach(x=>{x.classList.toggle('active',x.dataset.preset===palette.preset);x.setAttribute('aria-pressed',String(x.dataset.preset===palette.preset))});
+   const preset=themePresets.find(x=>x.id===palette.preset);
+   $('#paletteName').textContent=preset?.name||'Своя палитра';
+   $('#glowRange').value=palette.glowStrength;$('#glowValue').value=palette.glowStrength+'%';
+   $('#contrastRange').value=palette.contrast;$('#contrastValue').value=palette.contrast+'%';
+   // Deliberately use only chosen colors in sidebar and five tool cards.
+   $$('.nav').forEach((el,i)=>el.style.setProperty('--n-rgb',rgb(palette.colors[i%palette.count])));
+   $$('.module-card').forEach((el,i)=>el.style.setProperty('--module',palette.colors[i%palette.count]));
+   savePalette();
+ }
+ const presetRoot=$('#palettePresets');
+ themePresets.filter(p=>p.id!=='custom').forEach(p=>{
+   const btn=document.createElement('button');btn.type='button';btn.className='preset-card';btn.dataset.preset=p.id;
+   const mark=document.createElement('span');mark.className='preset-mark';mark.setAttribute('aria-hidden','true');
+   p.colors.slice(0,p.count).forEach(hex=>{const piece=document.createElement('i');piece.style.background=hex;mark.append(piece)});
+   const name=document.createElement('span');name.textContent=p.name;btn.append(mark,name);
+   btn.addEventListener('click',()=>{palette.colors=[...p.colors];palette.count=p.count;palette.preset=p.id;updatePalette();showToast('Палитра: '+p.name,'success')});presetRoot.append(btn)
+ });
+ $$('#paletteCount button').forEach(b=>b.addEventListener('click',()=>{palette.count=Number(b.dataset.count);palette.preset='custom';updatePalette()}));
+ [['colorOne',0],['colorTwo',1],['colorThree',2]].forEach(([id,i])=>$('#'+id).addEventListener('input',e=>{palette.colors[i]=e.target.value;palette.preset='custom';updatePalette()}));
+ $('#resetPalette').addEventListener('click',()=>{palette={colors:[...defaultTheme.colors],count:2,preset:'steel',glowStrength:65,contrast:50};updatePalette();showToast('Палитра восстановлена','success')});
+ $('#glowRange').addEventListener('input',e=>{palette.glowStrength=Number(e.target.value);updatePalette()});
+ $('#contrastRange').addEventListener('input',e=>{palette.contrast=Number(e.target.value);updatePalette()});
+ try{const saved=JSON.parse(localStorage.getItem('photostudio.hyper.theme.v1')||'null');
+   if(saved&&[2,3].includes(saved.count)&&Array.isArray(saved.colors)&&saved.colors.length===3&&saved.colors.every(c=>/^#[0-9a-f]{6}$/i.test(c))) {
+     palette.colors=saved.colors;palette.count=saved.count;palette.preset=themePresets.some(p=>p.id===saved.preset)?saved.preset:'custom';
+     palette.glowStrength=Math.max(0,Math.min(100,Number(saved.glowStrength)||0));palette.contrast=Math.max(0,Math.min(100,Number(saved.contrast)||0));
+   }
+ }catch(_){/* corrupted/localStorage blocked: defaults remain */}
+ updatePalette();
+ $$('.demo-fake-tabs button').forEach(btn=>btn.addEventListener('click',()=>{$$('.demo-fake-tabs button').forEach(x=>x.classList.toggle('active',x===btn));}));
+ $('#previewClick').addEventListener('click',()=>{const bar=$('#previewProgressFill');bar.style.width='10%';requestAnimationFrame(()=>bar.style.width='88%');showToast('Отклик интерфейса — без обработки файлов','success')});
+ $('#previewToast').addEventListener('click',()=>showToast('Система уведомлений использует твою цветовую палитру'));
+ // The HTML demo cannot access facy.ai cookies or authenticate cross-origin.
+ $('#facyConnect').addEventListener('click',()=>{
+   $('#facyConnectionState').textContent='СЕССИЯ НЕ ПРОВЕРЕНА';
+   $('#facyHint').textContent='Откроется официальный Facy AI. В этой HTML-демонстрации статус входа не отслеживается.';
+   showToast('Открываем официальный Facy AI. Авторизация выполняется только на сайте.');
+ });
+ $('#facyHow').addEventListener('click',()=>showToast('В desktop-версии вход выполняет facy_login.py, обработку — facy_engine.py. HTML не имеет доступа к сессии Facy.'));
+
+ window.PhotoStudioDesignDemo={version:'HyperMotion Palette Demo 2.0',get currentPage(){return current},get motion(){return motion},get selectedCount(){return Object.values(selected).reduce((n,a)=>n+a.length,0)},get availableEffects(){return effects.length}};
+ updateScroll();
+})();
+</script><script>'use strict';
+// Production bridge. Keeps the original HyperMotion CSS/motions intact.
+(() => {
+ const token='__PS_RUNTIME_TOKEN__';
+ const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+ const chosen=window.PhotoStudioSelected||{home:[],faceSource:[],faceTarget:[],compress:[],sort:[],shuffle:[]};
+ if(!chosen.crop)chosen.crop=[];
+ let currentJob=null, currentResult=null, authTimer=null, uploadController=null;
+ const inputMap={homeFiles:'home',faceSourceInput:'faceSource',faceTargetInput:'faceTarget',cropFile:'crop',compressFile:'compress',sortFiles:'sort',shuffleFiles:'shuffle',sortFolderInput:'sort',shuffleFolderInput:'shuffle'};
+ const lng=()=>{try{return localStorage.getItem('photo.studio.language')||'ru'}catch(_){return document.getElementById('psLanguage')?.value||'ru'}};
+ const tx=(ru,en,uk)=>lng()==='en'?en:lng()==='uk'?uk:ru;
+ async function call(path,data=null,options={}){
+   const h={'X-PhotoStudio-Token':token};
+   let req={headers:h,cache:'no-store'};
+   if(data!==null){req.method='POST';h['Content-Type']='application/json';req.body=JSON.stringify(data)}
+   if(options.blob){req.method='POST';req.signal=options.signal;h['Content-Type']='application/octet-stream';h['X-File-Name']=encodeURIComponent(options.blob.name);
+     h['X-Relative-Path']=encodeURIComponent(options.blob.webkitRelativePath||options.blob.name);req.body=options.blob}
+   const response=await fetch(path,req);
+   let body;
+   try{body=await response.json()}catch(e){throw Error(tx('Некорректный ответ приложения','Invalid application response','Некоректна відповідь застосунку'))}
+   if(!response.ok)throw Error(body.error||`HTTP ${response.status}`);
+   return body;
+ }
+ function notify(message,bad=false){
+   const stack=$('#toastStack');const box=document.createElement('div');box.className='toast';box.setAttribute('role','status');
+   box.textContent=(bad?'⚠  ':'✓  ')+message;stack.append(box);
+   setTimeout(()=>{box.classList.add('toast-out');setTimeout(()=>box.remove(),280)},5000);
+ }
+ function setContent(sel,text){const el=$(sel);if(el)el.textContent=text}
+ function setWidth(sel,p){const el=$(sel);if(el){el.style.width=p+'%';el.style.transform='none'}}
+ function setBusy(b){for(const id of ['faceRun','cropDemo','compressDemo','sortPreview','shuffleDo']){const el=$('#'+id);if(el)el.disabled=b}}
+ function updateHomeStatus(status,result=''){
+   const values=$$('#page-home .dashboard-side .session-stat .session-value');
+   if(values[0]) values[0].textContent=status;
+   if(values[1]&&result) values[1].textContent=result;
+ }
+ function stateProgress(kind,p){
+   if(kind==='face'){setContent('#facePct',p+'%');setWidth('#faceProgress',p)}
+   if(kind==='compress'){setContent('#compressPct',p+'%');setWidth('#compressProgress',p)}
+ }
+ // Capture selections before demo handlers reset <input> values.
+ document.addEventListener('change',e=>{
+   if(!Object.hasOwn(inputMap,e.target.id))return;
+   const group=inputMap[e.target.id];
+   // Native HyperMotion handlers own file selection for regular inputs.
+   if(!['sortFolderInput','shuffleFolderInput'].includes(e.target.id))return;
+   const selection=Array.from(e.target.files||[]);
+   if(!selection.length)return;
+   chosen[group]=selection;
+   if(e.target.id==='sortFolderInput'){setContent('#sortFileList',chosen.sort.length+' files selected');}
+   if(e.target.id==='shuffleFolderInput'){setContent('#shuffleFileStatus',chosen.shuffle.length+' files selected');}
+   if(group==='crop')notify(tx('Изображение готово к кадрированию','Image ready for crop','Зображення готове до кадрування'));
+ },true);
+ document.addEventListener('drop',e=>{
+   const zone=e.target.closest?.('#homeDropZone,#faceSourceDrop,#faceTargetDrop,#compressDrop,#sortDrop');
+   if(!zone||!e.dataTransfer)return;
+   const files=Array.from(e.dataTransfer.files||[]);
+   const idMap={homeDropZone:'home',faceSourceDrop:'faceSource',faceTargetDrop:'faceTarget',compressDrop:'compress',sortDrop:'sort'};
+   // The original app's drop handler synchronizes real files and visual queue.
+   // Do not replace its array from an earlier capture handler.
+   if(files.length && !window.PhotoStudioSelected)chosen[idMap[zone.id]]=files;
+ },true);
+ function files(group){return chosen[group]||[]}
+ async function upload(group){
+   const arr=files(group);
+   if(!arr.length)throw Error(tx('Сначала выбери изображения','Select images first','Спочатку обери зображення'));
+   if(arr.length>10000)throw Error('Maximum batch: 10 000 images');
+   const results=new Array(arr.length);
+   const status=document.createElement('div');status.className='toast';status.id='psUploadProgress';
+   $('#toastStack').append(status);
+   const controller=new AbortController();uploadController=controller;
+   let next=0,done=0;
+   async function worker(){
+     while(next<arr.length && !controller.signal.aborted){
+       const i=next++,f=arr[i];
+       results[i]=(await call('/api/upload',null,{blob:f,signal:controller.signal})).id;
+       done++;
+       if(done===arr.length||done%Math.max(1,Math.floor(arr.length/100))===0)
+         status.textContent=tx('Загружено: ','Uploaded: ','Завантажено: ')+done+'/'+arr.length;
+     }
+   }
+   try{await Promise.all(Array.from({length:Math.min(4,arr.length)},()=>worker()));return results;}
+   catch(err){controller.abort();throw err}
+   finally{status.remove();if(uploadController===controller)uploadController=null}
+ }
+ async function create(kind,groups,options={}){
+   if(currentJob&&['running','queued'].includes(currentJob.status))throw Error(tx('Дождись завершения текущей задачи','Another task is still running','Інше завдання ще виконується'));
+   setBusy(true); currentResult=null;updateHomeStatus(tx('Выполняется','Running','Виконується'));
+   try{
+     let uploaded={};
+     for(const group of groups)uploaded[group]=await upload(group);
+     const fileGroup=kind==='face'?'faceTarget':groups[0];
+     const job=await call('/api/jobs',{kind,files:uploaded[fileGroup],...(kind==='face'?{source:uploaded.faceSource[0]}:{}),...options});
+     currentJob=job;stateProgress(kind,0);
+     poll(job.id,kind);
+   }catch(e){setBusy(false);updateHomeStatus(tx('Ошибка','Error','Помилка'));notify(e.name==='AbortError'?tx('Загрузка отменена','Upload cancelled','Завантаження скасовано'):e.message,e.name!=='AbortError');throw e}
+ }
+ async function poll(id,kind){
+   try{
+     const p=await call('/api/jobs/'+id);
+     if(currentJob?.id!==id)return;
+     currentJob=p;
+     const percent=p.percent||0;stateProgress(kind,percent);
+     if(kind==='face')setContent('#faceStatus',(p.status||'').toUpperCase()+' · '+(p.message||''));
+     if(kind==='compress'&&p.status==='running')setContent('#compressPct',percent+'%');
+     if(['queued','running'].includes(p.status))setTimeout(()=>poll(id,kind),350);
+     else{
+       setBusy(false);
+       if(p.status==='done'){
+         currentResult=p.output;updateHomeStatus(tx('Готово','Done','Готово'),p.done+'/'+p.total);
+         stateProgress(kind,100);
+         notify(tx('Готово! Результаты сохранены: ','Done! Results saved: ','Готово! Результати збережені: ')+p.output);
+         if(kind==='compress')setContent('#compressPct',tx('Готово','Done','Готово'));
+         if(kind==='face'){setContent('#faceStatus',tx('ГОТОВО','DONE','ГОТОВО'));setContent('#facePct','100%')}
+         if(p.bytes_in&&kind==='compress'){
+           const saved=100*(1-p.bytes_out/p.bytes_in);
+           const info=$('#page-compress .panel-desc');
+           if(info)info.textContent=tx('Обработано ','Processed ','Оброблено ')+p.done+tx(' файлов, изменение размера: ',' files, size difference: ',' файлів, зміна розміру: ')+saved.toFixed(1)+'%';
+         }
+         if(kind!=='face')showResultAction(p.output);
+         if(kind==='face'){setContent('#faceResultText',tx('Свапы сохранены в выбранной папке','Swaps saved in selected folder','Свапи збережено у вибраній теці'));$('#faceResultOpen').disabled=false;}
+         else showPreview(id,kind).catch(()=>{});
+       } else if(p.status==='cancelled'){updateHomeStatus(tx('Отменено','Cancelled','Скасовано'));notify(tx('Задача отменена','Task cancelled','Завдання скасовано'))}
+       else{updateHomeStatus(tx('Ошибка','Error','Помилка'));notify(p.error||p.message||'Operation failed',true)}
+     }
+   }catch(err){setBusy(false);notify(err.message,true)}
+ }
+
+ async function showPreview(id,kind){
+   const info=await call('/api/results/'+id);
+   if(!info.files?.length)return;
+   const name=info.files[0];
+   const response=await fetch('/api/results/'+id+'/file?name='+encodeURIComponent(name),{headers:{'X-PhotoStudio-Token':token}});
+   if(!response.ok)return;
+   const image=URL.createObjectURL(await response.blob());
+   const zone=kind==='crop'?'#cropArea':null;
+   const host=zone?$(zone):null;
+   if(!host)return;
+   let img=$('#psPreviewResult');if(img){URL.revokeObjectURL(img.src);img.remove()}
+   img=document.createElement('img');img.id='psPreviewResult';img.src=image;img.alt=tx('Обработанное изображение','Processed image','Оброблене зображення');
+   img.style.cssText='display:block;width:100%;max-height:320px;object-fit:contain;border-radius:12px;border:1px solid var(--c1);';
+   host.append(img);
+ }
+
+ function showResultAction(path){
+   let el=$('#psOpenResults');
+   if(!el){el=document.createElement('button');el.id='psOpenResults';el.className='btn primary';
+     el.textContent=tx('Открыть папку результатов','Open results folder','Відкрити папку результатів');
+     const el0=$('#page-home .workspace-actions')||$('#page-face .toolbar-inline');
+     (el0||document.querySelector('.top-actions')).append(el);
+     el.addEventListener('click',()=>reveal());
+   }
+   el.hidden=false;
+ }
+ async function reveal(){if(!currentResult){notify(tx('Пока нет готовых результатов','No results yet','Поки немає готових результатів'));return}
+   try{await call('/api/reveal',{path:currentResult})}catch(e){notify(e.message,true)} }
+ const actionMap={
+  faceRun:()=>create('face',['faceSource','faceTarget']),
+  cropDemo:()=>{
+    const active=$$('#cropRatios button').find(b=>b.classList.contains('active'));
+    return create('crop',['crop'],{ratio:active?.dataset.ratio||'1:1',zoom:Number($('#cropZoom').value),cropRect:{...window.PhotoStudioCropSelection}})},
+  compressDemo:()=>{
+    const active=$$('#formatTabs button').find(b=>b.classList.contains('active'));
+    return create('compress',['compress'],{format:active?.textContent?.trim()||'WEBP',quality:Number($('#quality').value)})},
+  sortPreview:()=>create('sort',['sort'],{perFolder:Number($('#perFolder').value)}),
+  shuffleDo:()=>create('shuffle',['shuffle'],{withinFolders:!!$$('#shuffleModes button').find(b=>b.classList.contains('active')&&b.dataset.mode==='folders')})
+ };
+ // Capture on the document BEFORE the demo's click handlers on buttons.
+ document.addEventListener('click',e=>{
+   const target=e.target.closest('button,a');if(!target)return;
+   if(target.id==='sortFolderPick'){e.preventDefault();$('#sortFolderInput').click();return;}
+   if(target.id==='shuffleFolderPick'){e.preventDefault();$('#shuffleFolderInput').click();return;}
+   if(Object.hasOwn(actionMap,target.id)){
+     e.preventDefault();e.stopImmediatePropagation();actionMap[target.id]().catch(()=>{});return;
+   }
+   if(target.id==='homeToCompress'&&chosen.home.length)chosen.compress=[...chosen.home];
+   if(target.id==='faceCancel'){
+     e.preventDefault();e.stopImmediatePropagation();
+     if(uploadController)uploadController.abort();
+     if(currentJob)call('/api/jobs/'+currentJob.id+'/cancel',{}).then(()=>notify(tx('Остановка запрошена','Cancellation requested','Скасування запитано'))).catch(err=>notify(err.message,true));
+     return;
+   }
+   if(target.id==='psOpenResults'||target.id==='faceResultOpen'){
+     e.preventDefault();e.stopImmediatePropagation();reveal();return;
+   }
+   if(target.id==='facyConnect'){
+     e.preventDefault();e.stopImmediatePropagation();startFacy();return;
+   }
+   if(target.id==='facyHow'){
+     e.preventDefault();e.stopImmediatePropagation();verifyFacy();return;
+   }
+   if(target.id==='facyDisconnect'){
+     e.preventDefault();e.stopImmediatePropagation();disconnectFacy();return;
+   }
+   if(target.id==='faceChooseOutput'){
+     e.preventDefault();e.stopImmediatePropagation();chooseOutput();return;
+   }
+   if(target.id==='faceRestoreOutput'){
+     e.preventDefault();e.stopImmediatePropagation();resetOutput();return;
+   }
+ },true);
+ function facyBanner(mode,title,description){
+   const el=$('#facyInlineNote'); if(!el)return;
+   el.hidden=false;el.dataset.state=mode;
+   $('#facyInlineTitle').textContent=title;
+   $('#facyInlineDetail').textContent=description;
+   el.querySelector('.facy-state-icon').textContent=mode==='success'?'✓':mode==='error'?'!':'·';
+   // New state replays an entry animation; successful confirmation stays visible.
+   el.style.animation='none';void el.offsetWidth;el.style.animation='';
+ }
+ async function startFacy(){
+   try{const auth=await call('/api/facy/connect',{});
+     facyBanner('working',tx('Открываем Facy AI','Opening Facy AI','Відкриваємо Facy AI'),tx('Войди в появившемся окне, затем нажми «Проверить вход».','Sign in in the opened browser, then select Verify sign-in.','Увійди в браузері, потім натисни «Перевірити вхід».'));
+     watchFacy();
+   }catch(e){facyBanner('error',tx('Не удалось подключиться','Connection failed','Не вдалося підключитися'),e.message)}
+ }
+ async function verifyFacy(){
+   try{await call('/api/facy/complete',{});
+     facyBanner('working',tx('Проверяем вход…','Verifying sign-in…','Перевіряємо вхід…'),tx('Ожидаем подтверждения сессии от браузера Facy.','Waiting for the Facy session verification.','Очікуємо підтвердження сесії Facy.'));
+     watchFacy();
+   }catch(e){facyBanner('error',tx('Вход не подтверждён','Sign-in not verified','Вхід не підтверджено'),e.message)}
+ }
+ async function disconnectFacy(){
+   try{await call('/api/facy/disconnect',{});
+     if(authTimer){clearInterval(authTimer);authTimer=null}
+     setContent('#facyConnectionState',tx('НЕ ПОДКЛЮЧЕНО','NOT CONNECTED','НЕ ПІДКЛЮЧЕНО'));
+     facyBanner('working',tx('Facy AI отключён','Facy AI disconnected','Facy AI відключено'),tx('Сессию можно подключить снова.','You can reconnect whenever needed.','Сесію можна підключити знову.'));
+   }catch(e){facyBanner('error',tx('Ошибка','Error','Помилка'),e.message)}
+ }
+ function watchFacy(){if(authTimer)clearInterval(authTimer);
+   let attempts=0;
+   const pollAuth=async()=>{try{
+     const auth=await call('/api/facy/status');
+     const states={connected:tx('ПОДКЛЮЧЕНО','CONNECTED','ПІДКЛЮЧЕНО'),starting:tx('ЗАПУСК','STARTING','ЗАПУСК'),browser_open:tx('ОЖИДАЕМ ВХОД','WAITING FOR SIGN-IN','ОЧІКУЄМО ВХОДУ'),disconnected:tx('НЕ ПОДКЛЮЧЕНО','NOT CONNECTED','НЕ ПІДКЛЮЧЕНО'),error:tx('ОШИБКА','ERROR','ПОМИЛКА')};
+     setContent('#facyConnectionState',states[auth.status]||auth.status);
+     if(auth.detail)setContent('#facyHint',auth.detail);
+     if(auth.connected){
+       if(authTimer)clearInterval(authTimer);authTimer=null;
+       facyBanner('success',tx('Успешно! Facy AI подключён','Success! Facy AI connected','Успішно! Facy AI підключено'),tx('Сессия подтверждена. Теперь можно запускать Face Swap.','Session verified. You can start Face Swap.','Сесію підтверджено. Можна запускати Face Swap.'));
+     }else if(auth.status==='error'){
+       if(authTimer)clearInterval(authTimer);authTimer=null;
+       facyBanner('error',tx('Ошибка подключения Facy','Facy connection error','Помилка підключення Facy'),auth.detail||'');
+     }else if(++attempts>450){clearInterval(authTimer);authTimer=null;}
+   }catch(_){if(authTimer)clearInterval(authTimer);authTimer=null}};
+   pollAuth();authTimer=setInterval(pollAuth,850)
+ }
+ function refreshFaceCount(){
+   const n=(chosen.faceTarget||[]).length;
+   setContent('#faceTargetCount',n+' '+(lng()==='en'?'files':lng()==='uk'?'файлів':'файлов'));
+ }
+ const queue=$('#faceTargetList');if(queue){
+   new MutationObserver(()=>refreshFaceCount()).observe(queue,{childList:true});
+   refreshFaceCount();
+ }
+ function updateOutput(data){
+   const el=$('#faceOutputPath');if(el){el.textContent=data.path||'—';el.title=data.path||'';}
+ }
+ async function fetchOutput(){try{updateOutput(await call('/api/face/output'))}catch(e){notify(e.message,true)}}
+ async function chooseOutput(){
+   const btn=$('#faceChooseOutput');btn.disabled=true;
+   try{const data=await call('/api/face/output/select',{});updateOutput(data);
+     if(!data.cancelled){setContent('#faceResultText',tx('Новая папка выбрана. Следующий Face Swap сохранится в отдельной подпапке.','New folder selected. The next Face Swap will use a new subfolder.','Нову теку вибрано. Наступний Face Swap збереже файли в окремій підтеці.'));notify(tx('Папка сохранения обновлена','Output folder updated','Теку збереження оновлено'));}
+   }catch(e){notify(e.message,true)}finally{btn.disabled=false}
+ }
+ async function resetOutput(){
+   try{updateOutput(await call('/api/face/output/reset',{}));notify(tx('Папка по умолчанию восстановлена','Default output folder restored','Типову теку відновлено'))}
+   catch(e){notify(e.message,true)}
+ }
+ fetchOutput();
+ // Re-opened Face Swap view reflects existing authenticated runtime state.
+ call('/api/facy/status').then(auth=>{if(auth.connected){setContent('#facyConnectionState',tx('ПОДКЛЮЧЕНО','CONNECTED','ПІДКЛЮЧЕНО'));facyBanner('success',tx('Facy AI подключён','Facy AI connected','Facy AI підключено'),tx('Сессия подтверждена.','Session verified.','Сесію підтверджено.'));}}).catch(()=>{});
+ function setLabel(id,text){const b=$('#'+id);if(b)b.textContent=text}
+ setLabel('faceRun',tx('Начать Face Swap','Start Face Swap','Почати Face Swap'));
+ setLabel('cropDemo',tx('Кадрировать и сохранить','Crop and save','Обрізати та зберегти'));
+ setLabel('compressDemo',tx('Сжать и сохранить','Compress and save','Стиснути та зберегти'));
+ setLabel('sortPreview',tx('Распределить и сохранить','Sort and save','Розподілити та зберегти'));
+ setLabel('shuffleDo',tx('Перемешать и сохранить','Shuffle and save','Перемішати та зберегти'));
+ setLabel('facyConnect',tx('Подключить Facy AI','Connect Facy AI','Підключити Facy AI'));
+ setLabel('facyHow',tx('Проверить вход','Verify sign-in','Перевірити вхід'));
+ setLabel('facyDisconnect',tx('Отключить','Disconnect','Відключити'));
+ setLabel('faceChooseOutput',tx('Выбрать папку','Choose folder','Обрати теку'));
+ setLabel('faceRestoreOutput',tx('По умолчанию','Default','Типова тека'));
+ // Make initial state precise: no fake output claims.
+ for(const p of $$('.page p,.page .panel-desc,.page .empty-state')){
+   const txt=p.textContent.trim();
+   if(/демо|демонстрац|прототип|будет реализован|не выполняется|не сохраня|недоступн|пример отклика|ничего на диск|browser/i.test(txt)){
+     if(txt.includes('Facy'))p.textContent=tx('Для обработки нужен интернет и авторизация на facy.ai.','Requires an internet connection and Facy sign-in.','Для обробки потрібні інтернет і вхід на facy.ai.');
+     else if(p.closest('#page-motion')){} // explain interactive effects there
+     else p.textContent=tx('Оригиналы не изменяются. Результаты сохраняются в папку «Изображения / Photo Studio».','Originals are never modified. Results are saved under Pictures / Photo Studio.','Оригінали не змінюються. Результати зберігаються в Зображення / Photo Studio.');
+   }
+ }
+ const statusEl=$('.rail-end .tiny-row span:last-child');if(statusEl)statusEl.textContent=tx('Локальное приложение','Local application','Локальний застосунок');
+ const note=$('.workspace-status');if(note)note.innerHTML='<span class="online-dot"></span> '+tx('Готово к работе · Без облачного хранения','Ready · No cloud storage','Готово · Без хмарного зберігання');
+ // User chooses images, not stock content. No embedded stock photographs.
+ call('/api/status').then(s=>{window.PhotoStudioRuntime={connected:true,version:s.version,chosen};}).catch(err=>notify(err.message,true));
+})();
+</script><script>
+(()=>{
+ const dict={"РАБОЧЕЕ ПРОСТРАНСТВО":["WORKSPACE","РОБОЧИЙ ПРОСТІР"],"Рабочее пространство":["Workspace","Робочий простір"],"Рабочая область":["Workspace","Робоча область"],"РАБОЧАЯ ОБЛАСТЬ":["WORKSPACE","РОБОЧА ОБЛАСТЬ"],"Инструменты":["Tools","Інструменти"],"Интерфейс":["Interface","Інтерфейс"],"Внешний вид и анимации":["Appearance & Motion","Вигляд та анімації"],"Локальное приложение":["Local application","Локальний застосунок"],"Поиск инструментов...":["Search tools...","Пошук інструментів..."],"PHOTO STUDIO / ПРОЕКТ":["PHOTO STUDIO / PROJECT","PHOTO STUDIO / ПРОЄКТ"],"Выбери свои изображения или открой инструмент для обработки.":["Select your images or open a processing tool.","Обери свої зображення або відкрий інструмент обробки."],"Проект не сохранён":["Unsaved project","Незбережений проєкт"],"Обработка в демо отключена":["Processing inactive","Обробка неактивна"],"Файлы проекта":["Project files","Файли проєкту"],"Изображения остаются в браузере. Ничего не отправляется в сеть.":["Images stay on your Mac. No cloud uploads.","Зображення залишаються на твоєму Mac. Без хмарних завантажень."],"Перетащи изображения сюда":["Drop images here","Перетягни зображення сюди"],"или нажми, чтобы выбрать файлы":["or click to select files","або натисни, щоб вибрати файли"],"В проекте пока нет файлов":["No files in the project","У проєкті поки немає файлів"],"Добавить файлы":["Add files","Додати файли"],"Открыть в Compress":["Open in Compress","Відкрити у Compress"],"Очистить":["Clear","Очистити"],"Текущая сессия":["Current session","Поточна сесія"],"Выбрано файлов":["Selected files","Вибрано файлів"],"Обработка":["Processing","Обробка"],"Не запущена":["Not started","Не запущено"],"Результаты":["Results","Результати"],"Нет":["None","Немає"],"Анимации":["Animations","Анімації"],"Выбери интенсивность эффектов.":["Choose motion intensity.","Обери інтенсивність ефектів."],"Настроить интерфейс":["Customize interface","Налаштувати інтерфейс"],"Выбери действие с фотографиями.":["Choose a photo task.","Обери дію з фотографіями."],"Замена лица · очередь":["Face swap · queue","Заміна обличчя · черга"],"Кадрирование":["Cropping","Кадрування"],"Сжатие изображений":["Image compression","Стиснення зображень"],"Распределение файлов":["File sorting","Розподіл файлів"],"Перемешивание порядка":["Shuffle order","Перемішування порядку"],"FACE SWAP / ЗАДАЧА":["FACE SWAP / TASK","FACE SWAP / ЗАВДАННЯ"],"Выбери исходное лицо и изображения для обработки. Очередь появится после добавления файлов.":["Select a source face and target images. The queue appears when files are added.","Обери початкове обличчя та зображення. Черга з'явиться після додавання файлів."],"Нужна сеть":["Internet required","Потрібен інтернет"],"Подключение Facy AI":["Facy AI connection","Підключення Facy AI"],"НЕ ПОДКЛЮЧЕНО":["NOT CONNECTED","НЕ ПІДКЛЮЧЕНО"],"Открыть Facy AI":["Open Facy AI","Відкрити Facy AI"],"Подключить Facy AI":["Connect Facy AI","Підключити Facy AI"],"Подтвердить вход":["Confirm sign-in","Підтвердити вхід"],"Как подключится в приложении":["How to connect","Як підключитися"],"01. Изображение-источник":["01. Source image","01. Початкове зображення"],"Одна собственная фотография; в приложении будет предпросмотр после выбора.":["Select one image containing the source face.","Обери одне зображення з початковим обличчям."],"Перетащи фото или нажми":["Drop a photo or click","Перетягни фото або натисни"],"Исходное изображение ещё не выбрано":["No source image selected","Початкове зображення не обрано"],"02. Целевые изображения":["02. Target images","02. Цільові зображення"],"Несколько файлов, удаление из очереди, понятные статусы.":["Multiple images, queue management and clear statuses.","Кілька зображень, керування чергою та зрозумілі статуси."],"Добавить изображения":["Add images","Додати зображення"],"Поддержка нескольких файлов":["Multiple files supported","Підтримка декількох файлів"],"Пустая очередь · ожидаем твои файлы":["Queue empty · add your files","Черга порожня · додай файли"],"Панель выполнения":["Processing panel","Панель виконання"],"Статус":["Status","Статус"],"Запуск / проверка / получение результата":["Start / verify / download result","Запуск / перевірка / отримання результату"],"НЕ ЗАПУЩЕНО":["NOT STARTED","НЕ ЗАПУЩЕНО"],"Начать Face Swap":["Start Face Swap","Почати Face Swap"],"Отменить":["Cancel","Скасувати"],"Результат / До и после":["Result / Before and after","Результат / До і після"],"До реального результата панель остаётся пустой.":["The panel stays empty until there is a real result.","Панель порожня до появи справжнього результату."],"Нет готового изображения":["No finished image","Немає готового зображення"],"Сравнение появится после настоящей обработки":["Comparison is available after processing","Порівняння доступне після обробки"],"Сравнить до / после":["Compare before / after","Порівняти до / після"],"Показать в Finder":["Show in Finder","Показати у Finder"],"SMART CROP / КАДРИРОВАНИЕ":["SMART CROP / CROPPING","SMART CROP / КАДРУВАННЯ"],"Загрузи изображение, двигай рамку, меняй пропорции или выбери свободную обрезку.":["Choose an image, aspect ratio and crop zoom.","Обери зображення, пропорції та масштаб кадру."],"ЛОКАЛЬНЫЙ ИНСТРУМЕНТ":["LOCAL TOOL","ЛОКАЛЬНИЙ ІНСТРУМЕНТ"],"Загрузи фото и двигай рамку мышью. Углы позволяют менять размер вручную.":["Your image appears here after you select a file.","Твоє зображення з'явиться тут після вибору файлу."],"Загрузить своё фото":["Add your photo","Додати своє фото"],"Выбрать папку":["Select folder","Вибрати теку"],"Сетка вкл/выкл":["Toggle grid","Показати сітку"],"Пропорция":["Aspect ratio","Пропорції"],"Масштаб рамки":["Crop zoom","Масштаб рамки"],"Соотношение":["Ratio","Співвідношення"],"Без сети":["Offline","Без мережі"],"Готовых файлов":["Completed files","Готових файлів"],"Кадрировать и сохранить":["Crop and save","Обрізати та зберегти"],"COMPRESS / СЖАТИЕ":["COMPRESS / COMPRESSION","COMPRESS / СТИСНЕННЯ"],"Добавь изображения и настрой параметры сжатия.":["Add images and configure compression.","Додай зображення та налаштуй стиснення."],"Изображения для обработки":["Images to process","Зображення для обробки"],"Добавь свои файлы — они появятся в очереди и не покинут браузер.":["Add your files to the processing queue.","Додай свої файли до черги обробки."],"Выбрать или перетащить фото":["Choose or drop images","Обери або перетягни фото"],"0 выбранных файлов":["0 selected files","0 вибраних файлів"],"Параметры обработки":["Processing settings","Налаштування обробки"],"Качество":["Quality","Якість"],"Желаемый формат":["Output format","Формат результату"],"Не трогать исходные файлы":["Keep originals unchanged","Не змінювати оригінали"],"Фактическая экономия появится после реального сжатия":["Actual savings are shown after compression","Фактична економія з'явиться після стиснення"],"Сжать и сохранить":["Compress and save","Стиснути та зберегти"],"SORT / ПАПКИ":["SORT / FOLDERS","SORT / ТЕКИ"],"Выбери файлы и укажи количество файлов в папке.":["Choose files and number of files per folder.","Обери файли та кількість файлів у теці."],"ЛОКАЛЬНАЯ ФАЙЛОВАЯ СИСТЕМА":["LOCAL FILE SYSTEM","ЛОКАЛЬНА ФАЙЛОВА СИСТЕМА"],"Выбранные файлы":["Selected files","Вибрані файли"],"Выбрать файлы для распределения":["Choose files to sort","Обрати файли для розподілу"],"Ничего на диск не записывается":["No changes to originals","Оригінали не змінюються"],"Выбери файлы, чтобы построить план папок":["Select files to preview folders","Обери файли для перегляду тек"],"План распределения":["Folder plan","План розподілу"],"Файлов в одной папке":["Files per folder","Файлів у теці"],"Ожидает файлы":["Waiting for files","Очікує на файли"],"Распределить и сохранить":["Sort and save","Розподілити та зберегти"],"SHUFFLE / ПОРЯДОК":["SHUFFLE / ORDER","SHUFFLE / ПОРЯДОК"],"Измени порядок выбранных файлов.":["Change the order of selected files.","Зміни порядок вибраних файлів."],"ЛОКАЛЬНЫЙ ПОРЯДОК":["LOCAL ORDER","ЛОКАЛЬНИЙ ПОРЯДОК"],"Порядок коллекции":["Collection order","Порядок колекції"],"Перемешать карточки":["Shuffle cards","Перемішати картки"],"Перемешать и сохранить":["Shuffle and save","Перемішати та зберегти"],"Вернуть порядок":["Restore order","Відновити порядок"],"Режимы":["Modes","Режими"],"Где перемешивать":["Shuffle scope","Де перемішувати"],"Вся коллекция":["Entire collection","Уся колекція"],"Внутри подпапок":["Inside subfolders","Усередині підтек"],"Загрузить свои файлы":["Choose your files","Обрати свої файли"],"ИНТЕРФЕЙС / ПЕРСОНАЛИЗАЦИЯ":["INTERFACE / CUSTOMIZATION","ІНТЕРФЕЙС / ПЕРСОНАЛІЗАЦІЯ"],"Выбери два или три цвета. Изменения применяются ко всему интерфейсу сразу. Все 24 эффекта сохранены.":["Choose two or three colors. Changes apply instantly. All 24 effects remain.","Обери два або три кольори. Зміни застосовуються одразу. Усі 24 ефекти збережені."],"24 / ИНТЕРАКТИВНО":["24 / INTERACTIVE","24 / ІНТЕРАКТИВНО"],"Цветовая палитра":["Color palette","Кольорова палітра"],"2 ЦВЕТА":["2 COLORS","2 КОЛЬОРИ"],"3 ЦВЕТА":["3 COLORS","3 КОЛЬОРИ"],"Тема влияет на навигацию, кнопки, карточки, рамки, прогресс, уведомления и эффекты. Без перезапуска.":["Theme affects navigation, buttons, cards, borders, progress, notifications and effects. No restart.","Тема змінює навігацію, кнопки, картки, рамки, прогрес, сповіщення та ефекти. Без перезапуску."],"Количество цветов":["Number of colors","Кількість кольорів"],"2 цвета":["2 colors","2 кольори"],"3 цвета":["3 colors","3 кольори"],"Готовые сочетания":["Presets","Готові поєднання"],"Свои цвета":["Custom colors","Власні кольори"],"Основной":["Primary","Основний"],"Дополнительный":["Secondary","Додатковий"],"Третий цвет":["Third color","Третій колір"],"Стальной синий":["Steel blue","Сталевий синій"],"Сбросить цвета":["Reset palette","Скинути кольори"],"Живой предпросмотр":["Live preview","Живий перегляд"],"Наведи курсор, нажми на кнопки и измени оттенки.":["Hover, click and change colors to preview.","Наведи курсор, натискай кнопки та змінюй кольори."],"Элемент интерфейса":["UI component","Елемент інтерфейсу"],"Цвет, бордер, glow, hover и движение":["Colors, borders, glow, hover and motion","Колір, рамка, світіння, наведення та рух"],"Проверить отклик":["Test interaction","Перевірити відгук"],"Уведомление":["Notification","Сповіщення"],"Анимации и эффекты":["Animations & effects","Анімації та ефекти"],"Режим движения":["Motion mode","Режим руху"],"Динамическое свечение":["Dynamic glow","Динамічне світіння"],"Мягкие световые акценты на кнопках и карточках":["Soft light on buttons and cards","М’які світлові акценти на кнопках і картках"],"Интенсивность подсветки":["Glow intensity","Інтенсивність підсвічування"],"Доля свечения, без влияния на скорость прокрутки":["Glow intensity without affecting scroll","Яскравість світіння без впливу на прокрутку"],"Контраст поверхностей":["Surface contrast","Контраст поверхонь"],"Разделение карточек и фона":["Distinction between cards and background","Відокремлення карток від тла"],"Лаборатория анимаций":["Motion Lab","Лабораторія анімацій"],"24 исходных эффекта. Вызываются по действию, без постоянной нагрузки на процессор.":["24 effects triggered on demand without constant rendering.","24 ефекти запускаються за дією без постійного навантаження."],"Все эффекты":["All effects","Усі ефекти"],"Случайный эффект ↗":["Random effect ↗","Випадковий ефект ↗"],"Системные анимации":["System animations","Системні анімації"],"То, что не укладывается в одну карточку: уведомления, поиск, загрузка, прокрутка и изменения состояний.":["Notifications, search, loading, scrolling and state changes.","Сповіщення, пошук, завантаження, прокрутка та зміни станів."],"Событийные эффекты":["Event effects","Ефекти подій"],"Конфетти только при подтверждении; уведомление с входом и выходом; диалог с появлением и управлением.":["Confetti on confirmation, entering and exiting notifications, animated dialog.","Конфеті після підтвердження, анімовані сповіщення та діалоги."],"Микро-конфетти":["Micro confetti","Мікроконфеті"],"Поиск ⌘K":["Search ⌘K","Пошук ⌘K"],"Тест вложенной прокрутки":["Nested scrolling test","Тест вкладеної прокрутки"],"Этот блок прокручивается отдельно. Весь остальной экран использует нативную прокрутку браузера без JavaScript-перехвата колёсика.":["This panel scrolls independently. The page uses native browser scrolling.","Ця панель прокручується окремо. Сторінка використовує нативну прокрутку браузера."],"НАЧАЛО ↓":["START ↓","ПОЧАТОК ↓"],"ПЛАВНО, БЕЗ ПЕРЕЗАПУСКОВ":["SMOOTH, NO RESTARTS","ПЛАВНО, БЕЗ ПЕРЕЗАПУСКІВ"],"КОНЕЦ ✓":["END ✓","КІНЕЦЬ ✓"],"Найти инструмент, действие или раздел...":["Find tool, action or page...","Знайти інструмент, дію чи розділ..."],"Ничего не найдено":["No results","Нічого не знайдено"],"Папка результатов":["Results folder","Тека результатів"],"Открыть папку результатов":["Open results folder","Відкрити теку результатів"],"Обработка завершена":["Processing complete","Обробку завершено"],"Я вошёл — проверить вход":["I signed in — verify","Я увійшов — перевірити вхід"],"Твой вариант":["Custom","Власний варіант"],"Глубокий океан":["Deep ocean","Глибокий океан"],"Северное сияние":["Northern lights","Північне сяйво"],"Титан":["Titanium","Титан"],"Хром и мята":["Chrome & mint","Хром і м’ята"],"Сталь и янтарь":["Steel & amber","Сталь і бурштин"],"Ультрафиолет":["Ultraviolet","Ультрафіолет"],"Готово":["Done","Готово"],"Обработка не запущена":["Not started","Обробку не розпочато"]};Object.assign(dict,{"Выбрать папку":["Select folder","Обрати теку"],"Готово к обработке":["Ready to process","Готово до обробки"],"Файлы обрабатываются на этом компьютере. Оригиналы не изменяются.":["Files are processed on this computer. Originals are untouched.","Файли обробляються на цьому комп’ютері. Оригінали не змінюються."],"Локальная обработка · Отдельная папка результатов · Без перезаписи исходников":["Local processing · Separate result folders · Originals protected","Локальна обробка · Окрема тека результатів · Оригінали захищені"],"Авторизация выполняется на facy.ai в отдельном окне браузера. Пароль не передаётся Photo Studio.":["Sign in to facy.ai in a separate browser window. Photo Studio never receives your password.","Увійди на facy.ai в окремому вікні. Photo Studio не отримує твій пароль."],"Изображения передаются в Facy AI только при запуске Face Swap.":["Images are sent to Facy AI only when Face Swap starts.","Зображення надсилаються до Facy AI лише після запуску Face Swap."],"Выбери исходное изображение лица для обработки.":["Choose one source-face image.","Обери одне початкове зображення обличчя."],"Исходное изображение будет отправлено в Facy только по команде обработки.":["The source image is sent to Facy only on processing.","Початкове зображення надсилається до Facy лише під час обробки."],"Реальный прогресс основан на количестве подтверждённо сохранённых результатов. Внешний сервис может ожидать дольше обычного.":["Progress counts successfully saved images. The external service may take time.","Прогрес враховує збережені зображення. Зовнішній сервіс може потребувати часу."],"Выбери фотографию, формат и масштаб. Экспорт сохранится в папке результатов.":["Choose image, ratio and zoom. Export is saved to the results folder.","Обери фото, пропорції та масштаб. Результат зберігається в окремій теці."],"Выбери файлы. Обработка выполняется локально и не изменяет оригиналы.":["Choose files. Processing is local and never modifies originals.","Обери файли. Обробка локальна й не змінює оригінали."],"После сжатия появится фактическая статистика размера.":["Actual file size statistics appear after processing.","Фактична статистика розміру з’явиться після обробки."],"Сжатие выполняет Pillow. Результаты сохраняются в отдельной папке.":["Pillow compresses images into a separate result folder.","Pillow стискає зображення в окрему теку результатів."],"Выбери отдельные файлы или целую папку; структура подпапок поддерживается.":["Choose images or a folder; subfolders are supported.","Обери файли або теку; підтек підтримуються."],"Оригиналы не перезаписываются":["Originals are never overwritten","Оригінали не перезаписуються"],"Файлы копируются в новые папки. При совпадении имён создаются уникальные имена.":["Files are copied to new folders. Name collisions are resolved safely.","Файли копіюються до нових тек. Однакові імена зберігаються без перезапису."],"Выбери файлы для случайной перестановки порядка.":["Select images to shuffle their order.","Обери файли для випадкового перемішування."],"Файлы не выбраны":["No files selected","Файли не вибрано"],"Новая последовательность сохраняется как отдельные копии. Исходные имена и файлы не изменяются.":["Shuffled copies are saved separately. Original files are untouched.","Перемішані копії зберігаються окремо. Оригінали не змінюються."]});
+ Object.assign(dict,{"03. Папка готовых свапов": ["03. Saved swaps folder", "03. Тека готових свапів"], "Выбери папку, куда Photo Studio будет сохранять готовые изображения. Каждый запуск создаёт отдельную подпапку; оригиналы остаются на месте.": ["Choose where Photo Studio saves completed swaps. Each run creates a separate subfolder; originals are untouched.", "Обери теку для готових свапів. Кожен запуск створює окрему підтеку; оригінали не змінюються."], "Текущее место сохранения": ["Current destination", "Поточне місце збереження"], "Проверить вход": ["Verify sign-in", "Перевірити вхід"], "Отключить": ["Disconnect", "Відключити"], "По умолчанию": ["Default", "Типова тека"], "Результаты появятся в выбранной папке": ["Results will appear in the selected folder", "Результати з’являться у вибраній теці"], "Открыть готовые свапы ↗": ["Open completed swaps ↗", "Відкрити готові свапи ↗"], "Очередь изображений": ["Image queue", "Черга зображень"], "0 файлов": ["0 files", "0 файлів"], "Можно добавлять файлы несколькими партиями": ["You can add images in several batches", "Можна додавати зображення кількома партіями"], "Загружаем путь…": ["Loading destination…", "Завантажуємо шлях…"]});
+ const langs=['ru','en','uk'];
+ const select=document.getElementById('psLanguage');
+ let language='ru';
+ try{language=localStorage.getItem('photo.studio.language')||'ru'}catch(_){}
+ if(!langs.includes(language))language='ru';select.value=language;
+ const bases=new WeakMap();
+ let busy=false;
+ function translate(text){
+    const value=text.trim();if(!value||!dict[value])return text;
+    const entry=dict[value]; const mapped=language==='en'?entry[0]:language==='uk'?entry[1]:value;
+    return text.replace(value,mapped);
+ }
+ function apply(node){
+    if(node.nodeType!==Node.TEXT_NODE)return;
+    const parent=node.parentElement;if(!parent||parent.closest('script,style,svg,code,pre,textarea,.files-list,.file-chip,.effect-visual,.command-results'))return;
+    let original=bases.get(node);
+    if(original===undefined){ original=node.nodeValue;bases.set(node,original) }
+    // Changed by application interaction? Capture new Russian originals.
+    const now=node.nodeValue;
+    const known=[original,translateRaw(original,'en'),translateRaw(original,'uk')];
+    if(!known.includes(now)&&dict[now?.trim()]){ original=now;bases.set(node,original) }
+    const translated=translateRaw(original,language);
+    if(now!==translated)node.nodeValue=translated;
+ }
+ Object.assign(dict,{
+  "Свободно":["Free","Вільно"],"Папка результатов":["Output folder","Тека результатів"],
+  "Готовые файлы сохраняются отдельно от оригиналов":["Completed files are saved separately from originals","Готові файли зберігаються окремо від оригіналів"],
+  "Загружаем путь…":["Loading folder…","Завантажуємо теку…"],
+  "Открыть результат":["Open results","Відкрити результат"],
+  "Результат кадрирования":["Crop result","Результат кадрування"],
+  "Перетащи рамку, чтобы выбрать область":["Drag the selection to choose an area","Перетягни рамку, щоб обрати область"]
+ });
+ function translateRaw(value,lng){
+    const trimmed=value.trim();const translated=dict[trimmed];
+    if(!translated||lng==='ru')return value;
+    return value.replace(trimmed,lng==='en'?translated[0]:translated[1]);
+ }
+ function all(root){
+    if(root.nodeType===Node.TEXT_NODE){apply(root);return}
+    if(root.nodeType!==Node.ELEMENT_NODE&&root.nodeType!==Node.DOCUMENT_NODE)return;
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;const nodes=[];
+    while((n=walker.nextNode()))nodes.push(n);
+    nodes.forEach(apply);
+    if(root===document){
+      for(const e of document.querySelectorAll('[placeholder],[title],[aria-label]')){
+        for(const name of ['placeholder','title','aria-label']){
+          const x=e.getAttribute(name);if(!x)continue;
+          const attr='ps-original-'+name;
+          if(!e.hasAttribute('data-'+attr))e.setAttribute('data-'+attr,x);
+          const initial=e.getAttribute('data-'+attr);
+          const t=translateRaw(initial,language);
+          if(t!==x)e.setAttribute(name,t);
+        }
+      }
+    }
+ }
+ const observer=new MutationObserver(entries=>{
+    if(busy)return;busy=true;
+    try{for(const m of entries){ if(m.type==='childList')m.addedNodes.forEach(n=>all(n));else if(m.type==='characterData')apply(m.target) }}
+    finally{busy=false}
+ });
+ select.addEventListener('change',()=>{language=select.value;document.documentElement.lang=language;
+   try{localStorage.setItem('photo.studio.language',language)}catch(_){}
+   busy=true;try{all(document)}finally{busy=false}
+ });
+ document.documentElement.lang=language;
+ all(document);
+ observer.observe(document.body,{subtree:true,characterData:true,childList:true});
+})();
+</script></body></html>
