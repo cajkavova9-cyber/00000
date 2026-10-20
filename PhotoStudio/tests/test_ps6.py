@@ -72,7 +72,7 @@ def test_browser_queue_and_folder(studio_server,monkeypatch,tmp_path):
     new=tmp/'selected';new.mkdir()
     monkeypatch.setattr(app,'choose_folder_native',lambda _ :new)
     with sync_playwright() as p:
-        browser=p.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+        browser=p.chromium.launch(headless=True,args=['--no-sandbox'])
         page=browser.new_page(viewport={'width':1440,'height':900},device_scale_factor=1)
         errors=[]
         page.on('pageerror',lambda err:errors.append(str(err)))
@@ -107,5 +107,5 @@ def test_browser_queue_and_folder(studio_server,monkeypatch,tmp_path):
         assert not page.locator('#facyInlineNote').is_hidden()
         assert 'Успешно' not in page.locator('#facyInlineTitle').inner_text() or 'Facy' in page.locator('#facyInlineTitle').inner_text()
         assert not errors,errors
-        page.screenshot(path='/mnt/data/PhotoStudio_6_FaceSwap_Preview.png',full_page=True)
+        page.screenshot(path=str(tmp_path / 'PhotoStudio_6_FaceSwap_Preview.png'),full_page=True)
         browser.close()
