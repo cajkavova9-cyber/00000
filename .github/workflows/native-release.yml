@@ -1,97 +1,113 @@
-name: Photo Studio Desktop — macOS and Windows
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-    tags:
-      - 'v*'
-# Use UTF-8 on Windows so localized HTML can be read by Path.read_text().
-env:
-  PYTHONUTF8: '1'
-permissions:
-  contents: read
-jobs:
-  macos:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - runner: macos-15-intel
-            cpu: Intel
-          - runner: macos-15
-            cpu: AppleSilicon
-    runs-on: ${{ matrix.runner }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install desktop build dependencies
+          test "$(uname -m)" = arm64
+          python -c "import platform; assert platform.machine() == 'arm64'"
+
+      - name: Install build dependencies
+        shell: bash
         run: |
           python -m pip install --upgrade pip
           python -m pip install PySide6 PySide6-Addons Pillow playwright pyinstaller pytest beautifulsoup4
-      - name: Package browser required for Facy AI
+
+      - name: Install Playwright Chromium
+        shell: bash
         run: |
           export PLAYWRIGHT_BROWSERS_PATH="$GITHUB_WORKSPACE/native_browsers"
           python -m playwright install chromium
+          test -d "$PLAYWRIGHT_BROWSERS_PATH"
+
       - name: Run backend tests
         working-directory: PhotoStudio
         env:
           PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/native_browsers
-        # The original browser folder-picker test asserts before its async UI update.
-        # Temporarily deselect this single browser test for release packaging.
-        # It is not counted as passing and needs its own cross-platform fix.
-        run: python -m pytest tests -q -k "not test_browser_queue_and_folder"
-      - name: Build real Photo Studio.app and DMG
+        shell: bash
+        run: |
+          # Existing async native-folder browser test is pending a separate fix.
+          # It is excluded, not counted as passed.
+          python -m pytest tests -q -k 'not test_browser_queue_and_folder'
+
+      - name: Prepare macOS browser-bundle packaging
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          # Do NOT pass Playwright's nested Chrome.app to PyInstaller --add-data.
+          # PyInstaller tries to sign an extracted binary without its whole
+          # surrounding .framework, which fails on macOS.
+          f = Path('packaging/build.py')
+          build = f.read_text(encoding='utf-8')
+          old_arg = "        '--add-data', f'{browser_cache}:ms-playwright',\n"
+          assert build.count(old_arg) == 1, 'Unexpected Playwright bundle argument'
+          build = build.replace(old_arg, '')
+
+          mark = "    assert bundle.is_dir(), bundle\n"
+          assert build.count(mark) == 1, 'Unexpected bundle layout'
+          addition = (
+              "    import shutil\n"
+              "    dest = bundle / 'Contents' / 'Resources' / 'ms-playwright'\n"
+              "    shutil.copytree(browser_cache, dest, symlinks=True, dirs_exist_ok=True)\n"
+              "    assert any(dest.glob('chromium-*')), 'Chromium missing from app'\n"
+              "    subprocess.run(['codesign', '--force', '--deep', '--sign', '-', str(bundle)], check=True)\n"
+          )
+          build = build.replace(mark, mark + addition)
+
+          old_copy = "shutil.copytree(bundle, mount / 'Photo Studio.app', dirs_exist_ok=True)"
+          assert build.count(old_copy) == 1, 'Unexpected DMG copy step'
+          build = build.replace(
+              old_copy,
+              "shutil.copytree(bundle, mount / 'Photo Studio.app', dirs_exist_ok=True, symlinks=True)"
+          )
+          f.write_text(build, encoding='utf-8')
+
+          # Point both runtime launch and frozen self-test to the copied Chrome.
+          f = Path('PhotoStudio/native_main.py')
+          source = f.read_text(encoding='utf-8')
+          old_browser = "Path(getattr(sys, '_MEIPASS', ROOT)) / 'ms-playwright'"
+          assert source.count(old_browser) == 2, 'Unexpected frozen-browser references'
+          new_browser = (
+              "(Path(sys.executable).parent.parent / 'Resources' / 'ms-playwright' "
+              "if sys.platform == 'darwin' else "
+              "Path(getattr(sys, '_MEIPASS', ROOT)) / 'ms-playwright')"
+          )
+          source = source.replace(old_browser, new_browser)
+          test_line = (
+              "assert browser_bundle.is_dir() and any(browser_bundle.glob('chromium-*')), "
+              "'Missing bundled Chromium'"
+          )
+          assert source.count(test_line) == 1, 'Unexpected self-test layout'
+          source = source.replace(
+              test_line,
+              test_line
+              + "\n        os.environ['PLAYWRIGHT_BROWSERS_PATH'] = str(browser_bundle)"
+              + "\n        with sync_playwright() as p:"
+              + "\n            browser = p.chromium.launch(headless=True)"
+              + "\n            browser.close()"
+          )
+          f.write_text(source, encoding='utf-8')
+
+          compile(build, 'packaging/build.py', 'exec')
+          compile(source, 'PhotoStudio/native_main.py', 'exec')
+          print('App and build script syntax validated')
+          PY
+
+      - name: Build Photo Studio.app and DMG
+        shell: bash
         run: python packaging/build.py
-      - name: Test installed macOS executable, no terminal UI
-        run: '"$(find PhotoStudio/dist/PhotoStudio.app/Contents/MacOS -maxdepth 1 -type f | head -1)" --self-test'
-      - name: Rename architecture-specific DMG
-        run: mv artifacts/PhotoStudio-macOS.dmg artifacts/PhotoStudio-macOS-${{ matrix.cpu }}.dmg
-      - name: Upload native macOS installer
+
+      - name: Self-test frozen app and signed browser
+        shell: bash
+        run: |
+          APP='PhotoStudio/dist/PhotoStudio.app'
+          test -d "$APP"
+          test -x "$APP/Contents/MacOS/PhotoStudio"
+          test -d "$APP/Contents/Resources/ms-playwright"
+          "$APP/Contents/MacOS/PhotoStudio" --self-test
+          codesign --verify --deep --verbose=2 "$APP"
+          test -s artifacts/PhotoStudio-macOS.dmg
+
+      - name: Upload Apple Silicon DMG
         uses: actions/upload-artifact@v4
         with:
-          name: PhotoStudio-macOS-${{ matrix.cpu }}-DMG
-          path: artifacts/PhotoStudio-macOS-${{ matrix.cpu }}.dmg
-  windows:
-    runs-on: windows-2022
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install desktop build dependencies
-        shell: pwsh
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install PySide6 PySide6-Addons Pillow playwright pyinstaller pytest beautifulsoup4
-      - name: Package browser required for Facy AI
-        shell: pwsh
-        run: |
-          $env:PLAYWRIGHT_BROWSERS_PATH="$env:GITHUB_WORKSPACE\native_browsers"
-          python -m playwright install chromium
-      - name: Run backend tests
-        working-directory: PhotoStudio
-        env:
-          PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/native_browsers
-        # The original browser folder-picker test asserts before its async UI update.
-        # Temporarily deselect this single browser test for release packaging.
-        # It is not counted as passing and needs its own cross-platform fix.
-        run: python -m pytest tests -q -k "not test_browser_queue_and_folder"
-      - name: Build Photo Studio.exe
-        run: python packaging/build.py
-      - name: Smoke-test frozen Windows executable
-        shell: pwsh
-        run: '& "PhotoStudio\dist\PhotoStudio\PhotoStudio.exe" --self-test'
-      - name: Build click-to-install Windows setup
-        shell: pwsh
-        run: |
-          choco install innosetup --no-progress -y
-          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
-          & $iscc 'packaging\PhotoStudio.iss'
-      - name: Upload native Windows installer
-        uses: actions/upload-artifact@v4
-        with:
-          name: PhotoStudio-Windows-Setup
-          path: artifacts/PhotoStudio-Windows-Setup.exe
+          name: PhotoStudio-macOS-AppleSilicon-DMG
+          path: artifacts/PhotoStudio-macOS.dmg
+          if-no-files-found: error
+          retention-days: 14
