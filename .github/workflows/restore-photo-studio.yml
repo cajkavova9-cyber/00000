@@ -1,0 +1,470 @@
+name: Photo Studio - Restore Animations and Build
+
+on:
+  push:
+    paths:
+      - '.github/workflows/restore-photo-studio.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  restore-and-start-build:
+    name: Restore original effects and fix app
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Download full repository history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply complete Photo Studio fixes
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+
+          def replace_once(source, old, new, label):
+              count = source.count(old)
+              if count != 1:
+                  raise RuntimeError(f'{label}: expected 1 match, found {count}')
+              return source.replace(old, new, 1)
+
+          html_path = Path('PhotoStudio/web/index.html')
+          backend_path = Path('PhotoStudio/app.py')
+
+          # Restore the original animated interface from a verified commit.
+          html = subprocess.check_output(
+              ['git', 'show', '683392c5d605:PhotoStudio/web/index.html']
+          ).decode('utf-8')
+          backend = backend_path.read_text(encoding='utf-8')
+
+          # Free cropping, including precise one-pixel edges.
+          html = replace_once(
+              html,
+              "let cropRatio='1:1',zoom=65,selection={x:.2,y:.2,w:.6,h:.6},drag=null;",
+              "let cropRatio='free',zoom=100,selection={x:0,y:0,w:1,h:1},drag=null;",
+              'Initial crop selection'
+          )
+          start = html.index(' function chooseRatio(key){')
+          end = html.index(" $$('#cropRatios button').forEach", start)
+          html = html[:start] + """
+          function chooseRatio(key){
+            cropRatio=key;
+            $$('#cropRatios button').forEach(b=>b.classList.toggle('active',b.dataset.ratio===key));
+            if(key!=='free'){
+              const [a,b]=ratios[key],r=imageBounds(),aspect=a/b;
+              let w=1,h=r.width/(aspect*r.height);
+              if(h>1){h=1;w=aspect*r.height/r.width;}
+              selection={x:(1-w)/2,y:(1-h)/2,w,h};
+            }
+            applyCrop();
+          }
+          window.PhotoStudioSetCropInsets=(left=0,top=0,right=0,bottom=0)=>{
+            const iw=cropImg.naturalWidth||1, ih=cropImg.naturalHeight||1;
+            const l=clamp(Math.round(Number(left)||0),0,iw-1);
+            const t=clamp(Math.round(Number(top)||0),0,ih-1);
+            const r=clamp(Math.round(Number(right)||0),0,iw-l-1);
+            const b=clamp(Math.round(Number(bottom)||0),0,ih-t-1);
+            selection={x:l/iw,y:t/ih,w:(iw-l-r)/iw,h:(ih-t-b)/ih};
+            cropRatio='free';
+            $$('#cropRatios button').forEach(b=>b.classList.toggle('active',b.dataset.ratio==='free'));
+            applyCrop();
+          };
+          """ + html[end:]
+          html = replace_once(
+              html,
+              'const minW=Math.max(16/r.width,.02),minH=Math.max(16/r.height,.02);',
+              'const minW=1/(cropImg.naturalWidth||r.width),minH=1/(cropImg.naturalHeight||r.height);',
+              'One-pixel resize handles'
+          )
+          html = replace_once(
+              html,
+              "selection={x,y,w,h}; if(drag.mode!=='move'){zoom=clamp(Math.round(w*100),25,90);$('#cropZoom').value=zoom;}applyCrop();",
+              'selection={x,y,w,h};applyCrop();',
+              'Remove crop zoom restriction'
+          )
+          html = replace_once(html, "chooseRatio('1:1');", "chooseRatio('free');", 'Default free crop')
+          html = replace_once(
+              html,
+              'window.PhotoStudioCropSelection={...selection};',
+              "window.PhotoStudioCropSelection={...selection};window.dispatchEvent(new CustomEvent('pscropchange',{detail:{...selection}}));",
+              'Crop pixel synchronization'
+          )
+
+          # MAX motion at all times; keep all original keyframes and effect handlers.
+          start = html.index(" if(matchMedia('(prefers-reduced-motion: reduce)').matches)")
+          end = html.index(' // Keyboard command palette', start)
+          html = html[:start] + " document.body.classList.remove('low-motion','balanced-motion');\n" + html[end:]
+          html = replace_once(
+              html,
+              "window.scrollTo({top:0,behavior:'auto'}); updateScroll();closeCmd(false);",
+              "window.scrollTo({top:0,behavior:'smooth'}); updateScroll();closeCmd(false);",
+              'Smooth navigation'
+          )
+          html = replace_once(
+              html,
+              '<div class="setting-subhead">Режим движения</div>',
+              '<div class="setting-subhead ps-hide-motion">Режим движения</div>',
+              'Hidden motion settings'
+          )
+
+          # Avoid Qt/Windows system color dialogs: use a custom themed editor.
+          for color_id in ('colorOne','colorTwo','colorThree'):
+              html = replace_once(
+                  html,
+                  f'id="{color_id}" type="color"',
+                  f'id="{color_id}" type="text" readonly',
+                  f'Color input {color_id}'
+              )
+          html = replace_once(
+              html,
+              "$('#colorOne').value=a;$('#colorTwo').value=b;$('#colorThree').value=c;",
+              "$('#colorOne').value=a;$('#colorTwo').value=b;$('#colorThree').value=c;"
+              "$('#colorOne').style.backgroundColor=a;$('#colorTwo').style.backgroundColor=b;"
+              "$('#colorThree').style.backgroundColor=c;",
+              'Color previews'
+          )
+
+          css = r"""
+          <style id="ps-desktop-refinements">
+          #cropGuide{max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important}
+          #cropAreaLabel,#page-crop .crop-metadata .mini-stat:first-child{display:none!important}
+          #page-crop .setting:has(#cropZoom){display:none!important}
+          #page-motion [data-motion-controls],
+          #page-motion .ps-hide-motion,
+          #page-motion .theme-lab-title,
+          #page-motion .control-strip,
+          #page-motion #labGrid,
+          #page-motion #labGrid + .section-head,
+          #page-motion #labGrid + .section-head + .feature-grid{display:none!important}
+          #page-motion .color-control input[type=text]{width:34px;height:29px;padding:0;font-size:0;color:transparent;
+            cursor:pointer;border:1px solid #ffffff60;border-radius:6px}
+          #ps-pixel-panel{margin-top:15px;padding:14px;background:#111d30;border:1px solid #ffffff25;border-radius:14px}
+          #ps-pixel-panel .ps-pixel-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:12px}
+          #ps-pixel-panel label{display:flex;flex-direction:column;gap:5px;font-size:11px;color:#b5c4dc}
+          #ps-pixel-panel input{width:100%;min-width:0;padding:8px;border:1px solid #ffffff35;
+            background:#091525;border-radius:8px;color:white;font:inherit}
+          .ps-color-cover{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;
+            background:#020712bd;padding:16px;animation:ps-color-appear .2s ease}
+          .ps-color-dialog{width:min(430px,100%);background:#101b2e;border:1px solid #637b9c;
+            border-radius:19px;padding:22px;box-shadow:0 24px 85px #000a}
+          .ps-color-dialog header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+          .ps-color-dialog h2{font-size:20px;margin:0}
+          .ps-color-dialog button{cursor:pointer}
+          .ps-color-dialog .ps-close{background:#ffffff12;color:white;border:1px solid #ffffff28;
+            padding:8px 12px;border-radius:9px}
+          .ps-color-dialog .ps-swatch-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin:15px 0}
+          .ps-color-dialog .ps-swatch-grid button{aspect-ratio:1;border:1px solid #ffffff50;border-radius:7px}
+          .ps-color-dialog .ps-color-line{display:flex;align-items:center;gap:11px;margin:13px 0}
+          .ps-color-dialog input[type=range]{width:100%;accent-color:#4c8dff}
+          .ps-color-dialog input[type=text]{width:110px;background:#091324;color:white;border:1px solid #ffffff45;
+            padding:9px;border-radius:8px;font:600 13px monospace}
+          .ps-color-dialog .ps-apply{background:var(--theme-gradient,#348cf6);color:white;border:0;
+            padding:10px 16px;border-radius:10px;font-weight:700}
+          @keyframes ps-color-appear{from{opacity:0}to{opacity:1}}
+          @media(max-width:560px){#ps-pixel-panel .ps-pixel-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+          </style>
+          """
+          html = replace_once(html, '</head>', css + '</head>', 'Interface styles')
+
+          extra = r"""
+          <script id="ps-desktop-fixes">
+          (() => {
+            'use strict';
+            const $ = q=>document.querySelector(q);
+            const token='__PS_RUNTIME_TOKEN__';
+
+            // Existing palette-aware confetti now fires on EVERY click.
+            function scatter(x,y){
+              const colors=['var(--c1)','var(--c2)','var(--mix3)','var(--c1)','var(--c2)'];
+              for(let i=0;i<28;i++){
+                const p=document.createElement('i');
+                p.className='confetti';
+                const theta=Math.random()*Math.PI*2;
+                const radius=55+Math.random()*160;
+                p.style.left=x+'px';p.style.top=y+'px';
+                p.style.background=colors[i%colors.length];
+                p.style.setProperty('--x',(Math.cos(theta)*radius)+'px');
+                p.style.setProperty('--y',(Math.sin(theta)*radius+50)+'px');
+                p.style.setProperty('--r',((Math.random()-.5)*950)+'deg');
+                document.body.append(p);
+                setTimeout(()=>p.remove(),1080);
+              }
+            }
+            window.addEventListener('click',e=>{
+              let x=e.clientX,y=e.clientY;
+              if(e.detail===0 && e.target instanceof Element){
+                const b=e.target.getBoundingClientRect();
+                x=b.left+b.width/2;y=b.top+b.height/2;
+              }
+              if(Number.isFinite(x)&&Number.isFinite(y))scatter(x,y);
+            },true);
+
+            // The source keeps all effects, while the requested controls stay hidden.
+            document.body.classList.remove('low-motion','balanced-motion');
+
+            // Native folder selection for Crop, Compress and Sort.
+            async function api(path,body){
+              const opts={headers:{'X-PhotoStudio-Token':token},cache:'no-store'};
+              if(body!==undefined){
+                opts.method='POST';opts.headers['Content-Type']='application/json';
+                opts.body=JSON.stringify(body);
+              }
+              const response=await fetch(path,opts);
+              const data=await response.json();
+              if(!response.ok)throw Error(data.error||'HTTP '+response.status);
+              return data;
+            }
+            function message(text){
+              const stack=$('#toastStack');
+              if(!stack)return;
+              const box=document.createElement('div');
+              box.className='toast';box.textContent=text;stack.append(box);
+              setTimeout(()=>{box.classList.add('toast-out');setTimeout(()=>box.remove(),300)},4200);
+            }
+            const chosenRoot={};
+            for(const kind of ['crop','compress','sort']){
+              api('/api/output/'+kind).then(data=>{
+                const field=$('#'+kind+'OutputPath');
+                if(field){field.textContent=data.path||'—';field.title=data.path||'';}
+                chosenRoot[kind]=data.path;
+              }).catch(err=>message(err.message));
+            }
+            window.addEventListener('click',async e=>{
+              if(!(e.target instanceof Element))return;
+              const btn=e.target.closest('.output-choose,.output-reset,.output-open');
+              if(!btn)return;
+              const kind=btn.dataset.outputKind;
+              if(!['crop','compress','sort'].includes(kind))return;
+              e.preventDefault();e.stopImmediatePropagation();
+              if(btn.disabled)return;
+              btn.disabled=true;
+              try{
+                if(btn.classList.contains('output-open')){
+                  if(!chosenRoot[kind])throw Error('Сначала выбери папку результатов');
+                  await api('/api/reveal',{path:chosenRoot[kind]});
+                }else{
+                  const operation=btn.classList.contains('output-reset')?'reset':'select';
+                  const data=await api('/api/output/'+kind+'/'+operation,{});
+                  const field=$('#'+kind+'OutputPath');
+                  if(field){field.textContent=data.path||'—';field.title=data.path||'';}
+                  chosenRoot[kind]=data.path;
+                  if(!data.cancelled)message('Папка результатов обновлена');
+                }
+              }catch(err){message('Ошибка: '+err.message)}
+              finally{btn.disabled=false}
+            },true);
+
+            // Numeric crop insets make one-pixel trimming possible even for
+            // images whose preview is much smaller than the original.
+            const ratioButtons=$('#cropRatios');
+            const photo=$('#cropImage');
+            if(ratioButtons&&photo){
+              const panel=document.createElement('div');
+              panel.id='ps-pixel-panel';
+              const heading=document.createElement('b');
+              heading.textContent='Точная обрезка (пиксели)';
+              const hint=document.createElement('p');
+              hint.textContent='Сколько пикселей убрать с каждой стороны. Введи число и нажми Enter.';
+              hint.style.cssText='font-size:11px;margin-top:5px';
+              panel.append(heading,hint);
+              const grid=document.createElement('div');
+              grid.className='ps-pixel-grid';
+              panel.append(grid);
+              const vals={left:0,top:0,right:0,bottom:0};
+              const labels=[['left','Слева'],['top','Сверху'],['right','Справа'],['bottom','Снизу']];
+              for(const [key,title] of labels){
+                const wrap=document.createElement('label');
+                const caption=document.createElement('span');caption.textContent=title;
+                const inp=document.createElement('input');
+                inp.type='number';inp.min='0';inp.step='1';inp.value='0';
+                inp.dataset.inset=key;
+                inp.addEventListener('change',()=>{
+                  vals[key]=Math.max(0,Math.trunc(Number(inp.value)||0));
+                  window.PhotoStudioSetCropInsets?.(vals.left,vals.top,vals.right,vals.bottom);
+                });
+                wrap.append(caption,inp);grid.append(wrap);
+              }
+              ratioButtons.closest('.setting')?.insertAdjacentElement('afterend',panel);
+              window.addEventListener('pscropchange',e=>{
+                if(!photo.naturalWidth||!photo.naturalHeight)return;
+                const r=e.detail||{},w=photo.naturalWidth,h=photo.naturalHeight;
+                vals.left=Math.max(0,Math.round((r.x||0)*w));
+                vals.top=Math.max(0,Math.round((r.y||0)*h));
+                vals.right=Math.max(0,Math.round((1-(r.x||0)-(r.w||0))*w));
+                vals.bottom=Math.max(0,Math.round((1-(r.y||0)-(r.h||0))*h));
+                for(const inp of grid.querySelectorAll('input')){
+                  if(document.activeElement!==inp)inp.value=vals[inp.dataset.inset];
+                }
+              });
+              photo.addEventListener('load',()=>{
+                for(const k of Object.keys(vals))vals[k]=0;
+                for(const input of grid.querySelectorAll('input'))input.value='0';
+              });
+            }
+
+            // Polished in-app picker, instead of the OS-native color dialog.
+            function colorEditor(input){
+              $('.ps-color-cover')?.remove();
+              const overlay=document.createElement('div');
+              overlay.className='ps-color-cover';
+              const dialog=document.createElement('div');
+              dialog.className='ps-color-dialog';
+              dialog.setAttribute('role','dialog');
+              dialog.setAttribute('aria-modal','true');
+              dialog.innerHTML=
+                '<header><h2>Выбор цвета</h2><button class="ps-close" type="button">✕</button></header>'+
+                '<p style="font-size:12px;margin:9px 0 14px">Настрой цвет для всей программы</p>'+
+                '<div class="ps-color-line"><div class="ps-preview" style="height:56px;flex:1;border-radius:10px"></div>'+
+                '<input class="ps-hex" type="text" maxlength="7" aria-label="Шестнадцатеричный цвет"></div>'+
+                '<div style="font-size:12px">Оттенок</div><input class="ps-h" type="range" min="0" max="360" value="200">'+
+                '<div style="font-size:12px">Насыщенность</div><input class="ps-s" type="range" min="0" max="100" value="70">'+
+                '<div style="font-size:12px">Яркость</div><input class="ps-l" type="range" min="0" max="100" value="55">'+
+                '<div class="ps-swatch-grid"></div>'+
+                '<div class="ps-color-line" style="justify-content:flex-end">'+
+                '<button class="ps-close" type="button">Отмена</button>'+
+                '<button class="ps-apply" type="button">Применить</button></div>';
+              overlay.append(dialog);document.body.append(overlay);
+              let selected=input.value;
+              const hex=dialog.querySelector('.ps-hex');
+              const preview=dialog.querySelector('.ps-preview');
+              const h=dialog.querySelector('.ps-h');
+              const s=dialog.querySelector('.ps-s');
+              const l=dialog.querySelector('.ps-l');
+              function valid(v){return /^#[a-fA-F0-9]{6}$/.test(v)}
+              function render(){
+                hex.value=selected.toUpperCase();
+                preview.style.background=selected;
+              }
+              function fromSliders(){
+                const hue=Number(h.value)/360,sat=Number(s.value)/100,light=Number(l.value)/100;
+                function f(n){
+                  const k=(n+hue*12)%12,amplitude=sat*Math.min(light,1-light);
+                  return Math.round((light-amplitude*Math.max(-1,Math.min(k-3,9-k,1)))*255)
+                    .toString(16).padStart(2,'0');
+                }
+                selected='#'+f(0)+f(8)+f(4);
+                render();
+              }
+              [h,s,l].forEach(el=>el.addEventListener('input',fromSliders));
+              hex.addEventListener('input',()=>{
+                if(valid(hex.value)){selected=hex.value;preview.style.background=selected;}
+              });
+              const close=()=>{overlay.remove();document.removeEventListener('keydown',onKey)};
+              const onKey=e=>{if(e.key==='Escape')close()};
+              document.addEventListener('keydown',onKey);
+              overlay.addEventListener('click',e=>{if(e.target===overlay)close()});
+              dialog.querySelectorAll('.ps-close').forEach(btn=>btn.addEventListener('click',close));
+              dialog.querySelector('.ps-apply').addEventListener('click',()=>{
+                if(!valid(hex.value)){hex.focus();return;}
+                input.value=hex.value.toLowerCase();
+                input.dispatchEvent(new Event('input',{bubbles:true}));
+                close();
+              });
+              const colors=['#4c8dff','#69bfff','#2ccaa5','#f0ae61','#8058ed','#ff65bf',
+                '#ff6d91','#ffffff','#09192e','#121d30','#43edca','#ffc36b',
+                '#90a4cf','#7b61ff','#30a2ff','#dae8f9'];
+              for(const color of colors){
+                const btn=document.createElement('button');
+                btn.type='button';btn.title=color;btn.style.background=color;
+                btn.addEventListener('click',()=>{selected=color;render()});
+                dialog.querySelector('.ps-swatch-grid').append(btn);
+              }
+              render();hex.focus();hex.select();
+            }
+            for(const id of ['colorOne','colorTwo','colorThree']){
+              const input=document.getElementById(id);
+              input?.addEventListener('click',e=>{e.preventDefault();colorEditor(input)});
+            }
+          })();
+          </script>
+          """
+          html = replace_once(html, '</body>', extra + '</body>', 'Interactive enhancements')
+
+          # Backend: prevent rejecting a one-pixel crop.
+          backend = replace_once(
+              backend,'cw <= 0.005 or ch <= 0.005',
+              'cw <= 0 or ch <= 0','Backend crop dimensions'
+          )
+          backend = replace_once(
+              backend,'box[2]-box[0]<2 or box[3]-box[1]<2',
+              'box[2]-box[0]<1 or box[3]-box[1]<1','Backend pixel resolution'
+          )
+
+          # Bring system folder pickers to the foreground on both platforms.
+          backend = replace_once(
+              backend,
+              "['osascript', '-e', script]",
+              "['osascript', '-e', 'activate', '-e', script]",
+              'Mac folder picker'
+          )
+          backend = replace_once(
+              backend,
+              '$d.SelectedPath = $env:PS_FACE_DEFAULT',
+              '$d.SelectedPath = $env:PS_FACE_DEFAULT\n'
+              '$owner = New-Object System.Windows.Forms.Form\n'
+              '$owner.TopMost = $true\n'
+              '$owner.ShowInTaskbar = $false\n'
+              '$owner.Opacity = 0\n'
+              '$owner.Show()\n'
+              'try { $result = $d.ShowDialog($owner) } '
+              'finally { $owner.Close(); $owner.Dispose() }',
+              'Windows folder picker owner'
+          )
+          backend = replace_once(
+              backend,
+              '$d.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK',
+              '$result -eq [System.Windows.Forms.DialogResult]::OK',
+              'Windows folder result'
+          )
+
+          # Fail rather than silently publishing an incomplete patch.
+          assert html.count('@keyframes') >= 35, 'Original animations missing'
+          assert 'const effects=[' in html, 'Original effects missing'
+          assert "motion='max'" in html, 'Maximum motion not enabled'
+          assert 'ps-desktop-fixes' in html, 'Enhancements missing'
+          assert 'PhotoStudioSetCropInsets' in html, 'Pixel crop missing'
+          for kind in ('crop','compress','sort'):
+              assert f'data-output-kind="{kind}"' in html, f'{kind} folder controls missing'
+          assert "box[2]-box[0]<1" in backend, 'One-pixel crop backend missing'
+
+          html_path.write_text(html, encoding='utf-8')
+          backend_path.write_text(backend, encoding='utf-8')
+          print('FIXES READY: original animations, MAX mode, crop, folders, palette')
+          PY
+
+      - name: Upload corrected source files
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoStudio-Fixed-Source
+          path: |
+            PhotoStudio/web/index.html
+            PhotoStudio/app.py
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Save fixes in repository
+        shell: bash
+        run: |
+          git config user.name "Photo Studio Build"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add PhotoStudio/web/index.html PhotoStudio/app.py
+          if ! git diff --cached --quiet; then
+            git commit -m "Restore full Photo Studio animations and improve crop, folders, palette"
+            git push origin HEAD:main
+          fi
+
+      - name: Start native Mac and Windows builds
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run native-release.yml --ref main
+          echo "Native macOS and Windows builds have been requested."
+  
