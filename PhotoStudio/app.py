@@ -67,7 +67,7 @@ def choose_folder_native(initial: Path) -> Path | None:
         initial = Path.home()
     if sys.platform == 'darwin':
         # Quotes/backslashes are escaped for an AppleScript string literal.
-        prompt = 'Select where to save completed Face Swap images'
+        prompt = 'Choose where Photo Studio should save results'
         start = str(initial).replace('\\', '\\\\').replace('"', '\\"')
         script = 'POSIX path of (choose folder with prompt "' + prompt + '" default location POSIX file "' + start + '")'
         proc = subprocess.run(['osascript', '-e', script], capture_output=True, text=True, timeout=180)
@@ -81,7 +81,7 @@ def choose_folder_native(initial: Path) -> Path | None:
         code = r'''
 Add-Type -AssemblyName System.Windows.Forms
 $d = New-Object System.Windows.Forms.FolderBrowserDialog
-$d.Description = 'Choose a folder for Face Swap results'
+$d.Description = 'Choose a folder for Photo Studio results'
 $d.SelectedPath = $env:PS_FACE_DEFAULT
 if ($d.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
     [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -669,7 +669,7 @@ class Handler(BaseHTTPRequestHandler):
         if route == '/api/settings':
             return self._json(200, self.studio.settings)
         if route == '/api/status':
-            return self._json(200, {'ok': True, 'version':'7.1', 'output': str(self.studio.output_root),
+            return self._json(200, {'ok': True, 'version':'8.0', 'output': str(self.studio.output_root),
                                     'facy': self.studio.auth_snapshot()})
         if route == '/api/facy/status':
             return self._json(200, self.studio.auth_snapshot())
