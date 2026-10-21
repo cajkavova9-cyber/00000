@@ -70,7 +70,7 @@ def choose_folder_native(initial: Path) -> Path | None:
         prompt = 'Choose where Photo Studio should save results'
         start = str(initial).replace('\\', '\\\\').replace('"', '\\"')
         script = 'POSIX path of (choose folder with prompt "' + prompt + '" default location POSIX file "' + start + '")'
-        proc = subprocess.run(['osascript', '-e', script], capture_output=True, text=True, timeout=180)
+        proc = subprocess.run(['osascript', '-e', 'activate', '-e', script], capture_output=True, text=True, timeout=180)
         if proc.returncode != 0:
             if '-128' in proc.stderr or 'User canceled' in proc.stderr:
                 return None
@@ -83,7 +83,13 @@ Add-Type -AssemblyName System.Windows.Forms
 $d = New-Object System.Windows.Forms.FolderBrowserDialog
 $d.Description = 'Choose a folder for Photo Studio results'
 $d.SelectedPath = $env:PS_FACE_DEFAULT
-if ($d.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+$owner = New-Object System.Windows.Forms.Form
+$owner.TopMost = $true
+$owner.ShowInTaskbar = $false
+$owner.Opacity = 0
+$owner.Show()
+try { $result = $d.ShowDialog($owner) } finally { $owner.Close(); $owner.Dispose() }
+if ($result -eq [System.Windows.Forms.DialogResult]::OK) {
     [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
     [Console]::WriteLine($d.SelectedPath)
 }
@@ -397,7 +403,7 @@ class Studio:
                                     if not all(isinstance(v,(int,float)) and not isinstance(v,bool) and 0 <= v <= 1 for v in coords):
                                         raise ValueError('Invalid crop rectangle')
                                     x,y,cw,ch = coords
-                                    if cw <= 0.005 or ch <= 0.005 or x+cw > 1.00001 or y+ch > 1.00001:
+                                    if cw <= 0 or ch <= 0 or x+cw > 1.00001 or y+ch > 1.00001:
                                         raise ValueError('Crop rectangle outside image')
                                     if ratio in ratios:
                                         # In a mixed-size batch preserve a fixed output aspect,
@@ -415,7 +421,7 @@ class Studio:
                                     else:
                                         # Free mode: same relative selection on every image.
                                         box = (max(0,round(x*w)),max(0,round(y*h)),min(w,round((x+cw)*w)),min(h,round((y+ch)*h)))
-                                    if box[2]-box[0]<2 or box[3]-box[1]<2:
+                                    if box[2]-box[0]<1 or box[3]-box[1]<1:
                                         raise ValueError('Crop selection is too small')
                                     img = img.crop(box)
                                 else:
