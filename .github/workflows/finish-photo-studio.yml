@@ -1,0 +1,153 @@
+name: Photo Studio - Finish Interface Fixes
+
+on:
+  push:
+    paths:
+      - '.github/workflows/finish-photo-studio.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  finish:
+    name: Fix Python syntax and rebuild desktop apps
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out current project
+        uses: actions/checkout@v4
+
+      - name: Apply prepared fixes and repair Qt indentation
+        shell: bash
+        run: |
+          python - <<'PY'
+          import ast
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          source = Path('.github/workflows/polish-photo-studio.yml')
+          lines = source.read_text(encoding='utf-8').splitlines()
+          starts = [i for i, x in enumerate(lines) if x.strip() == "python - <<'PY'"]
+          if len(starts) != 1:
+              raise RuntimeError('Prepared fixes not found')
+          start = starts[0]
+          end = next(i for i in range(start + 1, len(lines)) if lines[i].strip() == 'PY')
+          body = []
+          for line in lines[start+1:end]:
+              if line.startswith('          '):
+                  body.append(line[10:])
+              elif not line.strip():
+                  body.append('')
+              else:
+                  body.append(line)
+          program = '\n'.join(body) + '\n'
+          ast.parse(program, filename='photostudio_fixes.py')
+          script = Path('photostudio_fixes.py')
+          script.write_text(program, encoding='utf-8')
+          try:
+              subprocess.run([sys.executable, str(script)], check=True)
+          finally:
+              script.unlink(missing_ok=True)
+
+          # The previous repair generated a valid patch but incorrect
+          # indentation inside the inserted Qt class. Replace only
+          # that class with a correctly indented version.
+          file = Path('PhotoStudio/native_main.py')
+          code = file.read_text(encoding='utf-8')
+          start = code.index('    class NativeFolderChooser(QObject):')
+          end = code.index('    server = ThreadingHTTPServer', start)
+
+          bridge = '\n'.join([
+              '    class NativeFolderChooser(QObject):',
+              '        requested = Signal(object)',
+              '',
+              '        def __init__(self, parent):',
+              '            super().__init__(parent)',
+              '            self.dialog = QFileDialog(parent)',
+              "            self.dialog.setWindowTitle('Photo Studio — Папка результатов')",
+              '            self.dialog.setFileMode(QFileDialog.FileMode.Directory)',
+              '            self.dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)',
+              '            self.requested.connect(self._show, Qt.ConnectionType.QueuedConnection)',
+              '',
+              '        @Slot(object)',
+              '        def _show(self, request):',
+              '            try:',
+              "                self.dialog.setDirectory(str(request['initial']))",
+              '                if self.dialog.exec():',
+              '                    files = self.dialog.selectedFiles()',
+              "                    request['path'] = files[0] if files else None",
+              '            except Exception as exc:',
+              "                request['error'] = str(exc)",
+              '            finally:',
+              "                request['finished'].set()",
+              '',
+              '        def choose(self, initial):',
+              '            request = {',
+              "                'initial': initial,",
+              "                'finished': threading.Event(),",
+              "                'path': None,",
+              "                'error': None,",
+              '            }',
+              '            self.requested.emit(request)',
+              "            if not request['finished'].wait(180):",
+              "                raise TimeoutError('Folder selection timed out')",
+              "            if request['error']:",
+              "                raise RuntimeError(request['error'])",
+              "            return Path(request['path']) if request['path'] else None",
+              '',
+              '',
+          ]) + '\n'
+          fixed = code[:start] + bridge + code[end:]
+          ast.parse(fixed, filename='native_main.py')
+          file.write_text(fixed, encoding='utf-8')
+
+          html = Path('PhotoStudio/web/index.html').read_text(encoding='utf-8')
+          assert html.count('@keyframes') >= 35, 'Animations missing'
+          assert 'const effects=[' in html, 'Original effects missing'
+          assert 'psLanguageMenu' in html, 'Language selector missing'
+          assert 'cropArea.classList.remove' in html, 'Crop reset missing'
+          assert 'NativeFolderChooser' in fixed
+          print('All prepared improvements and Qt indentation fixed.')
+          PY
+
+      - name: Check Python and JavaScript
+        shell: bash
+        run: |
+          python -m py_compile PhotoStudio/app.py PhotoStudio/native_main.py
+          node --check PhotoStudio/web/runtime.js
+          git diff --check
+
+      - name: Upload updated source files
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoStudio-Final-Interface-Sources
+          path: |
+            PhotoStudio/web/index.html
+            PhotoStudio/web/runtime.js
+            PhotoStudio/app.py
+            PhotoStudio/native_main.py
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Commit the repaired app
+        shell: bash
+        run: |
+          git config user.name "Photo Studio Build"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add PhotoStudio/web/index.html PhotoStudio/web/runtime.js PhotoStudio/app.py PhotoStudio/native_main.py
+          if ! git diff --cached --quiet; then
+            git commit -m "Fix photo queues, Crop, language menu and Qt folder picker"
+            git push origin HEAD:main
+          fi
+
+      - name: Run native macOS and Windows builds
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run native-release.yml --ref main
+          echo "Requested native Mac and Windows installers."
+  
