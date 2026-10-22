@@ -1,0 +1,366 @@
+name: Photo Studio - Smart Compress by File Size
+
+on:
+  push:
+    paths:
+      - '.github/workflows/smart-compress.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  smart-compress:
+    name: Implement and test size-limited compression
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Download Photo Studio
+        uses: actions/checkout@v4
+
+      - name: Create compression engine
+        shell: bash
+        run: |
+          cat > PhotoStudio/engine/size_limit_compress.py <<'PYMODULE'
+          """Compress only oversized images to a strict per-file limit."""
+          from __future__ import annotations
+
+          import io
+          import os
+          import tempfile
+          from pathlib import Path
+
+          from PIL import Image, ImageOps
+          from engine.batch_files import safe_copy, safe_destination
+
+          ALLOWED_LIMITS = (1, 2, 3, 4, 5)
+
+          def _save_bytes(data: bytes, output: Path) -> None:
+              output.parent.mkdir(parents=True, exist_ok=True)
+              fd, temp = tempfile.mkstemp(prefix='.photostudio_', dir=output.parent)
+              try:
+                  with os.fdopen(fd, 'wb') as f:
+                      f.write(data)
+                  os.link(temp, output)
+              finally:
+                  Path(temp).unlink(missing_ok=True)
+
+          def _encode_webp(image: Image.Image, quality: int, icc: bytes | None) -> bytes:
+              buf = io.BytesIO()
+              options = {'format': 'WEBP', 'quality': quality, 'method': 4}
+              if icc:
+                  options['icc_profile'] = icc
+              image.save(buf, **options)
+              return buf.getvalue()
+
+          def _encode_lossless(image: Image.Image, icc: bytes | None) -> bytes:
+              buf = io.BytesIO()
+              options = {'format': 'WEBP', 'lossless': True, 'method': 4}
+              if icc:
+                  options['icc_profile'] = icc
+              image.save(buf, **options)
+              return buf.getvalue()
+
+          def compress_file(source, original_name, folder, max_mb):
+              if isinstance(max_mb, bool) or str(max_mb) not in ('1', '2', '3', '4', '5'):
+                  raise ValueError('Select a maximum file size from 1 to 5 MB')
+              limit = int(max_mb) * 1024 * 1024
+              source, folder = Path(source), Path(folder)
+              folder.mkdir(parents=True, exist_ok=True)
+
+              # Files that already fit are copied byte-for-byte.
+              if source.stat().st_size <= limit:
+                  destination = safe_destination(folder, Path(original_name).name)
+                  safe_copy(source, destination)
+                  return destination
+
+              # Only oversized files get encoded.
+              Image.MAX_IMAGE_PIXELS = 120_000_000
+              with Image.open(source) as opened:
+                  opened.load()
+                  icc = opened.info.get('icc_profile')
+                  working = ImageOps.exif_transpose(opened)
+                  alpha = 'A' in working.getbands() or 'transparency' in working.info
+                  image = working.convert('RGBA' if alpha else 'RGB')
+
+              # Prefer pixel-perfect, lossless WebP where practical.
+              if source.suffix.lower() in ('.png', '.webp'):
+                  lossless = _encode_lossless(image, icc)
+                  if len(lossless) <= limit:
+                      output = safe_destination(folder, Path(original_name).stem + '.webp')
+                      _save_bytes(lossless, output)
+                      return output
+
+              # Keep maximum resolution, then find highest quality fitting
+              # the limit. Reduce dimensions only when necessary.
+              for scale in (1.0, 0.92, 0.84, 0.76, 0.68, 0.60,
+                            0.52, 0.44, 0.36, 0.28, 0.20, 0.14, 0.10):
+                  if scale == 1.0:
+                      candidate = image
+                  else:
+                      width = max(1, round(image.width * scale))
+                      height = max(1, round(image.height * scale))
+                      candidate = image.resize((width, height), Image.Resampling.LANCZOS)
+
+                  minimum_quality = 68 if scale >= 0.28 else 45
+                  smallest = _encode_webp(candidate, minimum_quality, icc)
+                  if len(smallest) > limit:
+                      continue
+
+                  best = smallest
+                  low, high = minimum_quality + 1, 98
+                  while low <= high:
+                      q = (low + high) // 2
+                      encoded = _encode_webp(candidate, q, icc)
+                      if len(encoded) <= limit:
+                          best = encoded
+                          low = q + 1
+                      else:
+                          high = q - 1
+
+                  output = safe_destination(folder, Path(original_name).stem + '.webp')
+                  _save_bytes(best, output)
+                  return output
+
+              raise ValueError(
+                  f'Cannot compress {original_name} within {max_mb} MB; '
+                  'file was not saved above the selected size limit'
+              )
+          PYMODULE
+
+      - name: Update application and Compress interface
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_one(text, old, new, label):
+              found = text.count(old)
+              if found != 1:
+                  raise RuntimeError(f'{label}: expected 1 match, found {found}')
+              return text.replace(old, new, 1)
+
+          app_file = Path('PhotoStudio/app.py')
+          html_file = Path('PhotoStudio/web/index.html')
+          runtime_file = Path('PhotoStudio/web/runtime.js')
+          build_file = Path('packaging/build.py')
+
+          app = app_file.read_text(encoding='utf-8')
+          html = html_file.read_text(encoding='utf-8')
+          runtime = runtime_file.read_text(encoding='utf-8')
+          build = build_file.read_text(encoding='utf-8')
+
+          # The size-limit branch handles Compress; Crop, Face Swap
+          # and Sort retain their existing execution paths.
+          app = replace_one(
+              app,
+              "                    if kind in ('shuffle', 'sort'):",
+              "                    if kind == 'compress':\n"
+              "                        from engine.size_limit_compress import compress_file\n"
+              "                        dest = compress_file(upload.path, upload.name, dest_dir, request.get('maxMB', 2))\n"
+              "                    elif kind in ('shuffle', 'sort'):",
+              'Backend size-limit routing'
+          )
+
+          controls = (
+              '<div class="setting" id="compressLimitSetting">'
+              '<label>Максимальный размер готового фото '
+              '<span class="hint" id="compressLimitValue">2 МБ</span></label>'
+              '<div class="ratio-tabs" id="compressLimits" role="group" aria-label="Предел размера файла">'
+              '<button type="button" data-max-mb="1" aria-pressed="false">до 1 МБ</button>'
+              '<button type="button" class="active" data-max-mb="2" aria-pressed="true">до 2 МБ</button>'
+              '<button type="button" data-max-mb="3" aria-pressed="false">до 3 МБ</button>'
+              '<button type="button" data-max-mb="4" aria-pressed="false">до 4 МБ</button>'
+              '<button type="button" data-max-mb="5" aria-pressed="false">до 5 МБ</button>'
+              '</div>'
+              '<p id="compressLimitHelp" class="panel-desc" style="margin-top:11px">'
+              'Фото меньше выбранного лимита копируются без изменений. '
+              'Фото больше лимита оптимизируются автоматически. '
+              'Оригиналы всегда сохраняются.</p></div>'
+          )
+          html = replace_one(
+              html,
+              '<div class="setting"><label for="quality">',
+              controls + '<div class="setting"><label for="quality">',
+              'Replace quality slider with five size presets'
+          )
+
+          style = (
+              '<style id="ps-compress-size-theme">'
+              '#page-compress .setting:has(#quality),'
+              '#page-compress .setting:has(#formatTabs),'
+              '#page-compress #compressStats{display:none!important}'
+              '#compressLimits{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}'
+              '#compressLimits button{min-width:0;padding:11px 3px;font-size:12px}'
+              '#compressLimitSetting .panel-desc{line-height:1.65}'
+              '@media(max-width:620px){#compressLimits{grid-template-columns:repeat(3,minmax(0,1fr))}}'
+              '</style>'
+          )
+          html = replace_one(html, '</head>', style + '</head>', 'Compress styles')
+
+          behavior = (
+              '<script id="ps-compress-size-behavior">'
+              "(()=>{const root=document.getElementById('compressLimits');"
+              "if(!root)return;"
+              "const buttons=Array.from(root.querySelectorAll('button[data-max-mb]'));"
+              "const value=document.getElementById('compressLimitValue');"
+              "const select=document.getElementById('psLanguage');"
+              "const label=document.querySelector('#compressLimitSetting label');"
+              "const help=document.getElementById('compressLimitHelp');"
+              "function updateLanguage(){"
+              "const lang=select?.value||'ru';"
+              "const n=root.querySelector('.active')?.dataset.maxMb||'2';"
+              "value.textContent=n+(lang==='en'?' MB':' МБ');"
+              "const dictionary={"
+              "ru:['Максимальный размер готового фото','Фото меньше выбранного лимита копируются без изменений. Фото больше лимита оптимизируются автоматически. Оригиналы всегда сохраняются.'],"
+              "en:['Maximum output photo size','Files at or below the selected limit are copied unchanged. Larger files are automatically compressed. Originals are always preserved.'],"
+              "uk:['Максимальний розмір готового фото','Файли в межах ліміту копіюються без змін. Більші файли автоматично стискаються. Оригінали завжди зберігаються.']};"
+              "const data=dictionary[lang]||dictionary.ru;"
+              "label.firstChild.textContent=data[0]+' ';help.textContent=data[1];"
+              "buttons.forEach(b=>b.textContent=(lang==='en'?'Up to ':'до ')+b.dataset.maxMb+(lang==='en'?' MB':' МБ'));"
+              "}"
+              "root.addEventListener('click',e=>{const b=e.target.closest('button[data-max-mb]');"
+              "if(!b)return;buttons.forEach(x=>{const active=x===b;"
+              "x.classList.toggle('active',active);x.setAttribute('aria-pressed',String(active));});"
+              "updateLanguage();});"
+              "select?.addEventListener('change',updateLanguage);updateLanguage();"
+              "})();"
+              '</script>'
+          )
+          html = replace_one(html, '</body>', behavior + '</body>', 'Compress preset interaction')
+
+          runtime = replace_one(
+              runtime,
+              "return create('compress',['compress'],{format:active?.textContent?.trim()||'WEBP',quality:Number($('#quality').value)})",
+              "return create('compress',['compress'],{maxMB:Number(document.querySelector('#compressLimits .active')?.dataset.maxMb||2)})",
+              'Send selected size limit to Python'
+          )
+
+          # Ensure the dynamically imported compression module is inside
+          # both native PyInstaller builds.
+          build = replace_one(
+              build,
+              "        '--hidden-import', 'engine.facy_process',",
+              "        '--hidden-import', 'engine.size_limit_compress',\n"
+              "        '--hidden-import', 'engine.facy_process',",
+              'Package compression engine'
+          )
+
+          for path, content in (
+              (app_file, app), (html_file, html),
+              (runtime_file, runtime), (build_file, build)
+          ):
+              cleaned = '\n'.join(line.rstrip() for line in content.splitlines()) + '\n'
+              path.write_text(cleaned, encoding='utf-8')
+
+          assert 'const effects=[' in html
+          assert html.count('@keyframes') >= 35
+          assert "motion='max'" in html
+          assert 'compressLimits' in html
+          assert 'maxMB:Number(' in runtime
+          assert 'engine.size_limit_compress' in build
+          print('Compress now uses 1-5 MB per-file limits; other tools preserved.')
+          PY
+
+      - name: Add automated compression tests
+        shell: bash
+        run: |
+          cat > PhotoStudio/tests/test_compress_target.py <<'PYTEST'
+          import os
+          import tempfile
+          import unittest
+          from pathlib import Path
+
+          from PIL import Image
+          from engine.size_limit_compress import compress_file
+
+          class TargetCompressionTests(unittest.TestCase):
+              def test_small_file_is_copied_byte_for_byte(self):
+                  with tempfile.TemporaryDirectory() as tmp:
+                      root = Path(tmp)
+                      source = root / 'input.png'
+                      output = root / 'results'
+                      Image.new('RGB', (100, 80), '#347cf4').save(source, 'PNG')
+                      original = source.read_bytes()
+                      result = compress_file(source, 'input.png', output, 2)
+                      self.assertEqual(result.name, 'input.png')
+                      self.assertEqual(result.read_bytes(), original)
+                      self.assertEqual(source.read_bytes(), original)
+
+              def test_large_image_fits_one_megabyte(self):
+                  with tempfile.TemporaryDirectory() as tmp:
+                      root = Path(tmp)
+                      source = root / 'large.png'
+                      output = root / 'results'
+                      pixels = os.urandom(1100 * 900 * 3)
+                      image = Image.frombytes('RGB', (1100, 900), pixels)
+                      image.save(source, 'PNG')
+                      self.assertGreater(source.stat().st_size, 1024 * 1024)
+                      original_size = source.stat().st_size
+                      result = compress_file(source, 'large.png', output, 1)
+                      self.assertLessEqual(result.stat().st_size, 1024 * 1024)
+                      self.assertEqual(result.suffix, '.webp')
+                      with Image.open(result) as compressed:
+                          compressed.verify()
+                      self.assertEqual(source.stat().st_size, original_size)
+
+              def test_reject_invalid_limit(self):
+                  with tempfile.TemporaryDirectory() as tmp:
+                      source = Path(tmp) / 'photo.png'
+                      Image.new('RGB', (10, 10)).save(source, 'PNG')
+                      with self.assertRaises(ValueError):
+                          compress_file(source, 'photo.png', Path(tmp) / 'out', 9)
+
+          if __name__ == '__main__':
+              unittest.main()
+          PYTEST
+
+      - name: Install test dependency
+        shell: bash
+        run: |
+          python -m pip install --quiet pillow
+
+      - name: Validate Python JavaScript and compression behavior
+        shell: bash
+        run: |
+          python -m py_compile PhotoStudio/app.py PhotoStudio/engine/size_limit_compress.py
+          node --check PhotoStudio/web/runtime.js
+          PYTHONUTF8=1 PYTHONPATH=PhotoStudio python -m unittest discover -s PhotoStudio/tests -p test_compress_target.py -v
+          git diff --check
+
+      - name: Upload finished project sources
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoStudio-Smart-Compress-Source
+          path: |
+            PhotoStudio/app.py
+            PhotoStudio/engine/size_limit_compress.py
+            PhotoStudio/web/index.html
+            PhotoStudio/web/runtime.js
+            PhotoStudio/tests/test_compress_target.py
+            packaging/build.py
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Commit application changes
+        shell: bash
+        run: |
+          git config user.name "Photo Studio Build"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add PhotoStudio/app.py PhotoStudio/engine/size_limit_compress.py
+          git add PhotoStudio/web/index.html PhotoStudio/web/runtime.js
+          git add PhotoStudio/tests/test_compress_target.py packaging/build.py
+          if ! git diff --cached --quiet; then
+            git commit -m "Add strict 1-5MB photo compression while preserving smaller originals"
+            git push origin HEAD:main
+          fi
+
+      - name: Build native Mac and Windows installers
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run native-release.yml --ref main
+          echo "Native macOS and Windows builds requested."
+  
