@@ -1,0 +1,297 @@
+name: Photo Studio - Facy Reliability and Language Fix
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-facy-language.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  repair:
+    name: Fix and verify Facy queue and language
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out Photo Studio
+        uses: actions/checkout@v4
+
+      - name: Apply isolated Face Swap and language fixes
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def change(text, old, new, reason):
+              found = text.count(old)
+              if found != 1:
+                  raise RuntimeError(f'{reason}: expected one match, got {found}')
+              return text.replace(old, new, 1)
+
+          engine_file = Path('PhotoStudio/engine/facy_engine.py')
+          backend_file = Path('PhotoStudio/app.py')
+          runtime_file = Path('PhotoStudio/web/runtime.js')
+          interface_file = Path('PhotoStudio/web/index.html')
+
+          engine = engine_file.read_text(encoding='utf-8')
+          backend = backend_file.read_text(encoding='utf-8')
+          runtime = runtime_file.read_text(encoding='utf-8')
+          interface = interface_file.read_text(encoding='utf-8')
+
+          # Keep batches of 20: do not slow down processing by
+          # turning every target into a separate Facy request.
+          engine = change(
+              engine, 'DOWNLOAD_TIMEOUT_SECONDS = 120',
+              'DOWNLOAD_TIMEOUT_SECONDS = 240',
+              'Download deadline'
+          )
+          engine = change(
+              engine,
+              'STALL_SECONDS = 90  # one single download may not take longer than this',
+              'STALL_SECONDS = 180  # protect the worker from stalled browser downloads',
+              'Browser download watchdog'
+          )
+
+          engine = change(
+              engine,
+              '                completed = 0\n                total_batches =',
+              '                completed = 0\n'
+              '                incomplete_batches = []\n'
+              '                total_batches =',
+              'Partial-result bookkeeping'
+          )
+
+          engine = change(
+              engine,
+              '                    batch = targets[offset:offset+BATCH_SIZE]\n',
+              '                    batch = targets[offset:offset+BATCH_SIZE]\n'
+              '                    saved_this_batch = 0\n'
+              '                    def record_batch_progress(saved):\n'
+              '                        nonlocal saved_this_batch\n'
+              '                        saved_this_batch = saved\n'
+              "                        progress('progress', (completed + saved, len(targets)))\n",
+              'Safe downloaded-file tracking'
+          )
+
+          engine = change(
+              engine,
+              '                                on_saved=lambda saved: progress('
+              "'progress', (completed + saved, len(targets))),",
+              '                                on_saved=record_batch_progress,',
+              'Batch callback'
+          )
+
+          # A genuinely missing Facy result must not discard already
+          # downloaded photos or prevent later batches from being sent.
+          # We do not regenerate a whole batch automatically, because
+          # the downloaded files cannot be mapped reliably to inputs
+          # and repeated generation would create duplicate results.
+          engine = change(
+              engine,
+              '                        except Exception as exc:\n',
+              '                        except FacyIncompleteBatch as exc:\n'
+              '                            completed += saved_this_batch\n'
+              '                            incomplete_batches.append('
+              '(batch_idx, len(batch), saved_this_batch))\n'
+              "                            progress('progress', (completed, len(targets)))\n"
+              '                            _status(progress,\n'
+              '                                f"Пачка {batch_idx}: получено '
+              '{saved_this_batch} из {len(batch)}. "\n'
+              '                                "Недостающие результаты Facy не подтвердил. "\n'
+              '                                "Все полученные изображения сохранены; "\n'
+              '                                "продолжаем следующую пачку.")\n'
+              '                        except Exception as exc:\n',
+              'Continue after an incomplete batch'
+          )
+
+          # A stale result screen can sometimes fail to expose the
+          # "Start new swap" control. Return to the official batch
+          # page in that case and recheck the existing session.
+          engine = change(
+              engine,
+              "                        page.get_by_role('button', name='Start new swap').click()\n"
+              "                        page.locator('#sourceFileDropzone').wait_for("
+              "state='visible', timeout=30_000)",
+              '                        try:\n'
+              "                            page.get_by_role('button', name='Start new swap').click(timeout=15_000)\n"
+              "                            page.locator('#sourceFileDropzone').wait_for(state='visible', timeout=30_000)\n"
+              '                        except Exception:\n'
+              "                            page.goto(FACY_URL, wait_until='domcontentloaded', timeout=60_000)\n"
+              '                            if _login_required(page):\n'
+              "                                raise FacyError('Сессия Facy истекла. Войди заново.')\n"
+              "                            page.locator('#sourceFileDropzone').wait_for(state='visible', timeout=30_000)",
+              'Recovery of the Facy upload screen'
+          )
+
+          backend = change(
+              backend,
+              "        if job.done != job.total:\n"
+              "            raise RuntimeError(f'Facy returned {job.done} of {job.total} images.')",
+              "        if job.done != job.total:\n"
+              "            job.update(status='partial',\n"
+              "                       message=f'Сохранено {job.done} из {job.total} результатов Facy. '\n"
+              "                               'Остальные результаты сервис не предоставил.')\n"
+              "            return",
+              'Truthful partial result status'
+          )
+
+          runtime = change(
+              runtime,
+              "} else if(p.status==='cancelled'){",
+              "} else if(p.status==='partial'){\n"
+              "         currentResult=p.output;\n"
+              "         updateHomeStatus(tx('Частично готово','Partially complete','Частково готово'),p.done+'/'+p.total);\n"
+              "         setContent('#faceStatus',tx('ЧАСТИЧНО ГОТОВО','PARTIALLY DONE','ЧАСТКОВО ГОТОВО'));\n"
+              "         setContent('#faceResultText',tx('Скачанные фото сохранены в папке результатов','Downloaded photos are saved in the results folder','Завантажені фото збережені у теці результатів'));\n"
+              "         const resultButton=$('#faceResultOpen');\n"
+              "         if(resultButton)resultButton.disabled=false;\n"
+              "         if(p.output)showResultAction(p.output);\n"
+              "         notify(tx('Facy сохранил не все результаты: ','Facy did not deliver every result: ','Facy зберіг не всі результати: ')+p.done+'/'+p.total,true);\n"
+              "} else if(p.status==='cancelled'){",
+              'Face Swap partial status display'
+          )
+
+          # The translation observer was overwriting the button label
+          # back to RU after the language selector set EN or UA.
+          # Exclude only this selector; translate every other section.
+          interface = change(
+              interface,
+              "parent.closest('script,style,svg,code,pre,textarea,.files-list,.file-chip,.effect-visual,.command-results')",
+              "parent.closest('script,style,svg,code,pre,textarea,.files-list,.file-chip,.effect-visual,.command-results,#psLanguageButton,#psLanguageMenu')",
+              'Do not overwrite the selected language label'
+          )
+
+          assert engine.count('BATCH_SIZE = 20') == 1
+          assert 'incomplete_batches.append' in engine
+          assert 'DOWNLOAD_TIMEOUT_SECONDS = 240' in engine
+          assert 'psLanguageButton,#psLanguageMenu' in interface
+          assert "motion='max'" in interface
+          assert interface.count('@keyframes') >= 35
+          assert 'const effects=[' in interface
+          assert "p.status==='partial'" in runtime
+
+          for path, content in (
+              (engine_file, engine),
+              (backend_file, backend),
+              (runtime_file, runtime),
+              (interface_file, interface),
+          ):
+              path.write_text(content, encoding='utf-8')
+
+          print('Face Swap resilience and language label updated.')
+          PY
+
+      - name: Check source syntax
+        shell: bash
+        run: |
+          python -m py_compile PhotoStudio/app.py PhotoStudio/engine/facy_engine.py
+          node --check PhotoStudio/web/runtime.js
+          git diff --check
+
+      - name: Test continuation after an incomplete Facy batch
+        shell: bash
+        run: |
+          python -m pip install --quiet pillow
+          PYTHONPATH=PhotoStudio python - <<'PY'
+          import tempfile
+          import threading
+          from pathlib import Path
+          from types import SimpleNamespace
+          from unittest.mock import patch
+          from engine import facy_engine as f
+
+          class Element:
+              def count(self): return 0
+              def wait_for(self, **kw): pass
+              def click(self, **kw): pass
+              def is_checked(self): return True
+
+          class Page:
+              url = f.FACY_URL
+              def goto(self, *a, **kw): pass
+              def locator(self, *a, **kw): return Element()
+              def get_by_role(self, *a, **kw): return Element()
+              def get_by_text(self, *a, **kw): return Element()
+              def wait_for_url(self, *a, **kw): pass
+
+          class Context:
+              def new_page(self): return Page()
+              def close(self): pass
+
+          class Browser:
+              def new_context(self, **kw): return Context()
+              def close(self): pass
+
+          class Playwright:
+              chromium = SimpleNamespace(launch=lambda **kw: Browser())
+              def __enter__(self): return self
+              def __exit__(self, *args): pass
+
+          attempts = []
+          records = []
+
+          def downloader(page, count, staging, stop, **kwargs):
+              attempts.append(count)
+              if len(attempts) == 1:
+                  kwargs['on_saved'](19)
+                  raise f.FacyIncompleteBatch('Only 19 of 20 arrived')
+              kwargs['on_saved'](count)
+              return count
+
+          with tempfile.TemporaryDirectory() as path:
+              with patch.object(f, '_validate_paths', lambda *a: None):
+                  with patch.object(f, '_upload_via_zone', lambda *a, **kw: None):
+                      with patch.object(f, '_download_batch', downloader):
+                          saved, total = f.run_facy(
+                              Path('source.jpg'),
+                              [Path(f'target-{i}.jpg') for i in range(22)],
+                              Path(path),
+                              {'cookies': []},
+                              lambda k, v: records.append((k, v)),
+                              threading.Event(),
+                              playwright_factory=lambda: Playwright(),
+                          )
+          assert (saved, total) == (21, 22), (saved, total)
+          assert attempts == [20, 2], attempts
+          assert ('progress', (19, 22)) in records
+          assert ('progress', (21, 22)) in records
+          assert any(k == 'status' and 'продолжаем' in v for k, v in records)
+          assert f.DOWNLOAD_TIMEOUT_SECONDS == 240
+          print('PASS: 19/20 saved, next batch continued, final count 21/22.')
+          PY
+
+      - name: Save updated application sources
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoStudio-Facy-Language-Fixed-Source
+          path: |
+            PhotoStudio/engine/facy_engine.py
+            PhotoStudio/app.py
+            PhotoStudio/web/runtime.js
+            PhotoStudio/web/index.html
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Commit the verified changes
+        shell: bash
+        run: |
+          git config user.name "Photo Studio Build"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add PhotoStudio/engine/facy_engine.py PhotoStudio/app.py
+          git add PhotoStudio/web/runtime.js PhotoStudio/web/index.html
+          if ! git diff --cached --quiet; then
+            git commit -m "Correct language selector and improve Face Swap queue reliability"
+            git push origin HEAD:main
+          fi
+
+      - name: Build Mac and Windows applications
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run native-release.yml --ref main
+          echo "Requested both desktop installers."
+  
