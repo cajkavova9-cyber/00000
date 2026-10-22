@@ -119,7 +119,16 @@
          }
          if(kind!=='face')showResultAction(p.output);
          if(kind==='face'){setContent('#faceResultText',tx('Свапы сохранены в выбранной папке','Swaps saved in selected folder','Свапи збережено у вибраній теці'));$('#faceResultOpen').disabled=false;}
-         else showPreview(id,kind).catch(()=>{});
+
+else if(kind==='crop'){
+  const oldPreview=document.getElementById('psPreviewResult');
+  if(oldPreview){
+    try{URL.revokeObjectURL(oldPreview.src)}catch(_){}
+    oldPreview.remove();
+  }
+  document.getElementById('cropClearBatch')?.click();
+}else showPreview(id,kind).catch(()=>{});
+
        } else if(p.status==='cancelled'){updateHomeStatus(tx('Отменено','Cancelled','Скасовано'));notify(tx('Задача отменена','Task cancelled','Завдання скасовано'))}
        else{updateHomeStatus(tx('Ошибка','Error','Помилка'));notify(p.error||p.message||'Operation failed',true)}
      }

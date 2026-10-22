@@ -49,9 +49,9 @@ def _log_file() -> Path:
 
 def _desktop() -> int:
     from http.server import ThreadingHTTPServer
-    from PySide6.QtCore import Qt, QUrl, QStandardPaths
+    from PySide6.QtCore import Qt, QUrl, QStandardPaths, QObject, Signal, Slot
     from PySide6.QtGui import QIcon
-    from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
+    from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QFileDialog
     from PySide6.QtWebEngineWidgets import QWebEngineView
     from app import Handler, Studio, TEMP_ROOT
     import shutil
@@ -68,6 +68,45 @@ def _desktop() -> int:
     qt.setOrganizationName('Photo Studio')
     qt.setQuitOnLastWindowClosed(True)
 
+
+    class NativeFolderChooser(QObject):
+        requested = Signal(object)
+
+        def __init__(self, parent):
+            super().__init__(parent)
+            self.dialog = QFileDialog(parent)
+            self.dialog.setWindowTitle('Photo Studio — Папка результатов')
+            self.dialog.setFileMode(QFileDialog.FileMode.Directory)
+            self.dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
+            self.requested.connect(self._show, Qt.ConnectionType.QueuedConnection)
+
+        @Slot(object)
+        def _show(self, request):
+            try:
+                self.dialog.setDirectory(str(request['initial']))
+                if self.dialog.exec():
+                    files = self.dialog.selectedFiles()
+                    request['path'] = files[0] if files else None
+            except Exception as exc:
+                request['error'] = str(exc)
+            finally:
+                request['finished'].set()
+
+        def choose(self, initial):
+            request = {
+                'initial': initial,
+                'finished': threading.Event(),
+                'path': None,
+                'error': None,
+            }
+            self.requested.emit(request)
+            if not request['finished'].wait(180):
+                raise TimeoutError('Folder selection timed out')
+            if request['error']:
+                raise RuntimeError(request['error'])
+            return Path(request['path']) if request['path'] else None
+
+
     server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
     server.studio = Studio()
     server.daemon_threads = True
@@ -77,6 +116,8 @@ def _desktop() -> int:
     url = f'http://127.0.0.1:{server.server_address[1]}/'
 
     window = QMainWindow()
+    folder_chooser = NativeFolderChooser(window)
+    server.studio.native_folder_picker = folder_chooser.choose
     window.setWindowTitle('Photo Studio')
     window.setMinimumSize(1040, 700)
     window.resize(1440, 900)

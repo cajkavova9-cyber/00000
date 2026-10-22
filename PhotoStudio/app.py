@@ -219,7 +219,8 @@ class Studio:
             raise ValueError('Unknown tool')
         with self.lock:
             initial = self.output_roots[kind]
-        selected = choose_folder_native(initial)
+        picker = getattr(self, 'native_folder_picker', None)
+        selected = picker(initial) if callable(picker) else choose_folder_native(initial)
         if selected is None:
             return {**self.output_snapshot(kind), 'cancelled': True}
         try:

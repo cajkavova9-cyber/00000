@@ -235,6 +235,49 @@ button:focus-visible,[tabindex]:focus-visible,input:focus-visible,select:focus-v
 @keyframes ps-color-appear{from{opacity:0}to{opacity:1}}
 @media(max-width:560px){#ps-pixel-panel .ps-pixel-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
+
+<style id="ps-interface-polish">
+#faceTargetList,#cropBatchList,#compressList,#sortFileList,#homeFileList{
+  overscroll-behavior-y:auto!important;
+  scroll-behavior:auto!important;
+  overflow-anchor:none;
+  scrollbar-gutter:stable;
+}
+#faceTargetList .face-virtual-layer,
+#cropBatchList .face-virtual-layer,
+#compressList .face-virtual-layer,
+#sortFileList .face-virtual-layer,
+#homeFileList .face-virtual-layer{
+  overflow:visible;
+}
+#cropArea:not(.has-crop-photo) #cropGuide{display:none!important}
+#cropArea:not(.has-crop-photo) #cropImage{display:none!important}
+#cropArea #psPreviewResult{display:none!important}
+.ps-language-wrap{position:relative;overflow:visible}
+#psLanguage{position:absolute!important;opacity:0!important;
+  width:1px!important;height:1px!important;pointer-events:none!important}
+#psLanguageButton{padding:3px 3px 3px 0;border:0;background:transparent;
+  color:#f2f7ff;font-weight:750;cursor:pointer;display:flex;gap:7px;
+  align-items:center;transition:color .22s ease}
+#psLanguageButton:hover{color:var(--c2)}
+#psLanguageButton span{font-size:14px;color:var(--c2)}
+#psLanguageMenu{position:absolute;z-index:9000;top:calc(100% + 9px);
+  right:0;width:194px;padding:7px;background:#101d30;
+  border:1px solid #45658c;border-radius:13px;
+  box-shadow:0 19px 55px #0009;
+  animation:ps-language-in .22s cubic-bezier(.2,.9,.2,1) both}
+#psLanguageMenu[hidden]{display:none!important}
+#psLanguageMenu button{display:block;width:100%;text-align:left;
+  padding:11px 12px;border:0;border-radius:9px;
+  background:transparent;color:#cbd9ee;font-size:12px;cursor:pointer;
+  transition:background .22s ease,color .22s ease}
+#psLanguageMenu button:hover,#psLanguageMenu button[aria-selected=true]{
+  background:color-mix(in srgb,var(--c1),transparent 78%);color:white}
+@keyframes ps-language-in{
+  from{opacity:0;transform:translateY(-7px) scale(.98)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+</style>
 </head>
 <body>
 <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -277,7 +320,7 @@ button:focus-visible,[tabindex]:focus-visible,input:focus-visible,select:focus-v
 <div class="nav-label">Интерфейс</div>
 <button class="nav" data-page="motion" title="Внешний вид и анимации"><svg class="s-icon"><use href="#i-sliders"></use></svg><span class="nav-text">Внешний вид и анимации</span><i class="n-dot"></i></button>
 <div class="rail-end"><div class="tiny-row"><span class="online-dot"></span><span>Локальное приложение</span></div></div>
-</aside><div class="workspace"><header class="topbar"><div class="top-caption">PHOTO STUDIO <span>/</span> <span id="currentName">РАБОЧАЯ ОБЛАСТЬ</span></div><div class="top-actions"><label aria-label="Язык интерфейса" class="ps-language-wrap"><span class="ps-lang-glyph">A文</span><select aria-label="Язык интерфейса" id="psLanguage"><option value="ru">RU</option><option value="en">EN</option><option value="uk">UA</option></select></label><button aria-label="Открыть поиск" class="search-trigger" id="searchOpen"><span>Поиск инструментов...</span><span class="key">⌘ K</span></button><button aria-label="Показать уведомление" class="icon-btn" id="toastBtn" title="Уведомление"><svg class="s-icon"><use href="#i-info"></use></svg></button><button aria-label="Настройки" class="icon-btn" data-jump="motion" title="Внешний вид и анимации"><svg class="s-icon"><use href="#i-settings"></use></svg></button></div></header>
+</aside><div class="workspace"><header class="topbar"><div class="top-caption">PHOTO STUDIO <span>/</span> <span id="currentName">РАБОЧАЯ ОБЛАСТЬ</span></div><div class="top-actions"><div aria-label="Язык интерфейса" class="ps-language-wrap" id="psLanguageWidget"><span class="ps-lang-glyph">A文</span><select aria-label="Язык интерфейса" id="psLanguage" tabindex="-1" aria-hidden="true"><option value="ru">RU</option><option value="en">EN</option><option value="uk">UA</option></select><button id="psLanguageButton" type="button" aria-haspopup="listbox" aria-expanded="false">RU <span aria-hidden="true">⌄</span></button><div id="psLanguageMenu" role="listbox" aria-label="Выбор языка" hidden><button type="button" role="option" data-lang="ru">RU — Русский</button><button type="button" role="option" data-lang="en">EN — English</button><button type="button" role="option" data-lang="uk">UA — Українська</button></div></div><button aria-label="Открыть поиск" class="search-trigger" id="searchOpen"><span>Поиск инструментов...</span><span class="key">⌘ K</span></button><button aria-label="Показать уведомление" class="icon-btn" id="toastBtn" title="Уведомление"><svg class="s-icon"><use href="#i-info"></use></svg></button><button aria-label="Настройки" class="icon-btn" data-jump="motion" title="Внешний вид и анимации"><svg class="s-icon"><use href="#i-settings"></use></svg></button></div></header>
 <main>
 <section class="page active" data-title="РАБОЧАЯ ОБЛАСТЬ" id="page-home">
 <div class="workspace-heading">
@@ -418,7 +461,7 @@ button:focus-visible,[tabindex]:focus-visible,input:focus-visible,select:focus-v
  const icons = {check:'i-check',info:'i-info',spark:'i-spark',alert:'i-alert',image:'i-image',folder:'i-folder'};
  const icon=(name,cls='')=>`<svg class="s-icon ${cls}" aria-hidden="true"><use href="#${icons[name]||name}"/></svg>`;
  const pages = [{id:'home',title:'Рабочая область',key:'1'},{id:'face',title:'Face Swap',key:'2'},{id:'crop',title:'Smart Crop',key:'3'},{id:'compress',title:'Compress',key:'4'},{id:'sort',title:'Sort',key:'5'},{id:'motion',title:'Внешний вид и анимации',key:'6'}];
- 
+
  let current='home',motion='max',glow=true,cmdOpen=false;
  const urlRegistry=new WeakMap();
  const selected={home:[],faceSource:[],faceTarget:[],crop:[],compress:[],sort:[],shuffle:[]};
@@ -428,7 +471,7 @@ button:focus-visible,[tabindex]:focus-visible,input:focus-visible,select:focus-v
    $$('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+id));
    $$('.nav').forEach(n=>{n.classList.toggle('active',n.dataset.page===id);n.setAttribute('aria-current',n.dataset.page===id?'page':'false')});
    const p=pages.find(x=>x.id===id);$('#currentName').textContent=p.title.toUpperCase();
-   
+
    window.scrollTo({top:0,behavior:'smooth'}); updateScroll();closeCmd(false);
  }
  $$('[data-page]').forEach(btn=>btn.addEventListener('click',()=>setPage(btn.dataset.page)));
@@ -467,36 +510,79 @@ button:focus-visible,[tabindex]:focus-visible,input:focus-visible,select:focus-v
  function bytes(n){return n>1024*1024?(n/(1024*1024)).toFixed(1)+' МБ':Math.max(1,Math.round(n/1024))+' КБ'}
  function revokeFile(file){const url=urlRegistry.get(file);if(url){URL.revokeObjectURL(url);urlRegistry.delete(file)}}
  function fileRow(file,onRemove){const row=document.createElement('div');row.className='file-row';const thumb=document.createElement('div');thumb.className='file-thumbnail';if(file.type.startsWith('image/')){const image=document.createElement('img');image.alt='';let url=urlRegistry.get(file);if(!url){url=URL.createObjectURL(file);urlRegistry.set(file,url)}image.src=url;thumb.append(image)}else thumb.innerHTML=icon('folder');const name=document.createElement('div');name.className='file-name';name.textContent=file.name;name.title=file.name;const meta=document.createElement('span');meta.className='file-meta';meta.textContent=bytes(file.size);const btn=document.createElement('button');btn.className='remove-file';btn.type='button';btn.setAttribute('aria-label','Удалить '+file.name);btn.innerHTML=icon('i-x','sm');btn.addEventListener('click',onRemove);row.append(thumb,name,meta,btn);return row}
- function renderFaceQueue(key,id){
-   const root=$('#'+id),list=selected[key];
-   const top=root.scrollTop;
-   root.replaceChildren();root.style.display='block';
-   if(!list.length){root.append(Object.assign(document.createElement('div'),{className:'empty-state',textContent:'Файлы ещё не выбраны'}));return;}
-   const stride=66;
-   const spacer=document.createElement('div');spacer.className='face-virtual-spacer';spacer.style.cssText='height:'+list.length*stride+'px;position:relative;pointer-events:none';
-   const layer=document.createElement('div');layer.className='face-virtual-layer';layer.style.cssText='position:absolute;inset:0 0 auto 0;pointer-events:none';
-   root.style.position='relative';root.append(spacer,layer);root.scrollTop=Math.min(top,Math.max(0,list.length*stride-root.clientHeight));
-   function draw(){
-      if(!layer.isConnected)return;
-      const first=Math.max(0,Math.floor(root.scrollTop/stride)-2);
-      const last=Math.min(list.length,Math.ceil((root.scrollTop+root.clientHeight)/stride)+3);
-      if(root._psRange&&root._psRange[0]===first&&root._psRange[1]===last)return;
-      const nextFiles=new Set(list.slice(first,last));
-      for(const oldRow of layer.querySelectorAll('.file-row')){
-         if(oldRow._psFile&&!nextFiles.has(oldRow._psFile))revokeFile(oldRow._psFile);
+
+function renderFaceQueue(key,id){
+  const root=$('#'+id),list=selected[key];
+  const previousScroll=root.scrollTop;
+  root.replaceChildren();
+  root.style.display='block';
+  root.style.position='relative';
+  root._psDraw=null;
+  if(!list.length){
+    const placeholder=document.createElement('div');
+    placeholder.className='empty-state';
+    placeholder.textContent='Файлы ещё не выбраны';
+    root.append(placeholder);
+    return;
+  }
+  const stride=66;
+  const spacer=document.createElement('div');
+  spacer.style.height=(list.length*stride)+'px';
+  spacer.style.pointerEvents='none';
+  const layer=document.createElement('div');
+  layer.className='face-virtual-layer';
+  layer.style.cssText='position:absolute;left:0;right:0;top:0;height:0;pointer-events:none';
+  root.append(spacer,layer);
+  root.scrollTop=Math.min(previousScroll,Math.max(0,list.length*stride-root.clientHeight));
+  const mounted=new Map();
+  function draw(){
+    if(!layer.isConnected)return;
+    const first=Math.max(0,Math.floor(root.scrollTop/stride)-3);
+    const last=Math.min(list.length,Math.ceil((root.scrollTop+root.clientHeight)/stride)+4);
+    for(const [index,row] of mounted){
+      if(index<first||index>=last){
+        row.remove();
+        mounted.delete(index);
       }
-      root._psRange=[first,last];layer.replaceChildren();
-      for(let i=first;i<last;i++){
-         const file=list[i];if(!file)continue;
-         const row=fileRow(file,()=>{selected[key].splice(i,1);if(!Object.values(selected).some(a=>a.includes(file)))revokeFile(file);renderFiles(key,id);updateCount();if(key==='sort')updateSort();if(key==='crop'){$('#cropBatchSummary').textContent='В очереди: '+selected.crop.length+' фотографий · рамка применяется ко всем';$('#cropBatchList').classList.toggle('has-files',selected.crop.length>0)}});
-         row._psFile=file;
-         row.style.cssText='position:absolute;left:0;right:0;top:'+(i*stride)+'px;height:58px;pointer-events:auto';
-         layer.append(row);
-      }
-   }
-   root._psRange=null;root._psDraw=draw;draw();
-   if(!root._psAttached){root._psAttached=true;root.addEventListener('scroll',()=>{if(root._psRaf)return;root._psRaf=requestAnimationFrame(()=>{root._psRaf=null;root._psDraw?.()})},{passive:true})}
- }
+    }
+    for(let i=first;i<last;i++){
+      if(mounted.has(i))continue;
+      const file=list[i];
+      if(!file)continue;
+      const row=fileRow(file,()=>{
+        selected[key].splice(i,1);
+        if(!Object.values(selected).some(arr=>arr.includes(file)))revokeFile(file);
+        renderFiles(key,id);
+        updateCount();
+        if(key==='sort')updateSort();
+        if(key==='crop'){
+          $('#cropBatchSummary').textContent='В очереди: '+selected.crop.length+' фотографий · рамка применяется ко всем';
+          $('#cropBatchList').classList.toggle('has-files',selected.crop.length>0);
+        }
+      });
+      row.style.position='absolute';
+      row.style.left='0';
+      row.style.right='0';
+      row.style.top=(i*stride)+'px';
+      row.style.height='58px';
+      row.style.pointerEvents='auto';
+      layer.append(row);
+      mounted.set(i,row);
+    }
+  }
+  root._psDraw=draw;
+  draw();
+  if(!root._psAttached){
+    root._psAttached=true;
+    root.addEventListener('scroll',()=>{
+      if(root._psRaf)return;
+      root._psRaf=requestAnimationFrame(()=>{
+        root._psRaf=null;
+        root._psDraw?.();
+      });
+    },{passive:true});
+  }
+}
  function renderFiles(key,id){if(['faceTarget','crop','compress','sort','home'].includes(key))return renderFaceQueue(key,id);const root=$('#'+id);root.replaceChildren();const list=selected[key];if(!list.length){const d=document.createElement('div');d.className='empty-state';d.textContent=key==='faceSource'?'Исходное изображение ещё не выбрано':'Файлы ещё не выбраны';root.append(d)}else list.forEach((file,i)=>root.append(fileRow(file,()=>{selected[key].splice(i,1);if(!Object.values(selected).some(a=>a.includes(file)))revokeFile(file);renderFiles(key,id);updateCount();if(key==='sort')updateSort();if(key==='crop'){$('#cropBatchSummary').textContent='В очереди: '+selected.crop.length+' фотографий · рамка применяется ко всем';$('#cropBatchList').classList.toggle('has-files',selected.crop.length>0)}})));}
  function updateCount(){const n=new Set(Object.values(selected).flat()).size;$('#metricFiles').textContent=n;$('#dashboardCount').textContent=selected.home.length;$('#homeToCompress').disabled=!selected.home.length;$('#homeClear').disabled=!selected.home.length}
  function bindFiles(inputId,key,listId,multiple=false){const input=$('#'+inputId);input.addEventListener('change',()=>{const raw=Array.from(input.files||[]);if(!raw.length)return;
@@ -594,7 +680,7 @@ window.PhotoStudioSetCropInsets=(left=0,top=0,right=0,bottom=0)=>{
    if(!file)return;
    if(cropImg.dataset.objectUrl)URL.revokeObjectURL(cropImg.dataset.objectUrl);
    const url=URL.createObjectURL(file);cropImg.dataset.objectUrl=url;
-   cropImg.onload=()=>{chooseRatio(cropRatio)};
+   cropImg.onload=()=>{cropArea.classList.add('has-crop-photo');chooseRatio(cropRatio)};
    cropImg.src=url;cropImg.style.display='block';
  }
  $('#cropFile').addEventListener('change',e=>{
@@ -603,7 +689,7 @@ window.PhotoStudioSetCropInsets=(left=0,top=0,right=0,bottom=0)=>{
  $('#cropClearBatch').addEventListener('click',()=>{
    selected.crop.forEach(revokeFile);selected.crop=[];
    if(cropImg.dataset.objectUrl){URL.revokeObjectURL(cropImg.dataset.objectUrl);delete cropImg.dataset.objectUrl}
-   cropImg.removeAttribute('src');cropImg.style.display='none';updateCropBatch();
+   cropImg.removeAttribute('src');cropImg.style.display='none';cropArea.classList.remove('has-crop-photo');cropRatio='free';selection={x:0,y:0,w:1,h:1};chooseRatio('free');updateCropBatch();
  });
  for(const evt of ['dragenter','dragover'])cropArea.addEventListener(evt,e=>{e.preventDefault()});
  cropArea.addEventListener('drop',e=>{e.preventDefault();addCropPhotos(e.dataTransfer.files)});
@@ -851,7 +937,16 @@ window.PhotoStudioSetCropInsets=(left=0,top=0,right=0,bottom=0)=>{
          }
          if(kind!=='face')showResultAction(p.output);
          if(kind==='face'){setContent('#faceResultText',tx('Свапы сохранены в выбранной папке','Swaps saved in selected folder','Свапи збережено у вибраній теці'));$('#faceResultOpen').disabled=false;}
-         else showPreview(id,kind).catch(()=>{});
+
+else if(kind==='crop'){
+  const oldPreview=document.getElementById('psPreviewResult');
+  if(oldPreview){
+    try{URL.revokeObjectURL(oldPreview.src)}catch(_){}
+    oldPreview.remove();
+  }
+  document.getElementById('cropClearBatch')?.click();
+}else showPreview(id,kind).catch(()=>{});
+
        } else if(p.status==='cancelled'){updateHomeStatus(tx('Отменено','Cancelled','Скасовано'));notify(tx('Задача отменена','Task cancelled','Завдання скасовано'))}
        else{updateHomeStatus(tx('Ошибка','Error','Помилка'));notify(p.error||p.message||'Operation failed',true)}
      }
@@ -1308,6 +1403,54 @@ window.PhotoStudioSetCropInsets=(left=0,top=0,right=0,bottom=0)=>{
     const input=document.getElementById(id);
     input?.addEventListener('click',e=>{e.preventDefault();colorEditor(input)});
   }
+})();
+</script>
+
+<script id="ps-polished-language-selector">
+(() => {
+  const select=document.getElementById('psLanguage');
+  const wrapper=document.getElementById('psLanguageWidget');
+  const trigger=document.getElementById('psLanguageButton');
+  const menu=document.getElementById('psLanguageMenu');
+  if(!select||!wrapper||!trigger||!menu)return;
+  const items=[...menu.querySelectorAll('[data-lang]')];
+  function sync(){
+    trigger.firstChild.textContent=select.value.toUpperCase()+' ';
+    items.forEach(btn=>{
+      btn.setAttribute('aria-selected',String(btn.dataset.lang===select.value));
+    });
+  }
+  function close(){
+    menu.hidden=true;
+    trigger.setAttribute('aria-expanded','false');
+  }
+  function open(){
+    menu.hidden=false;
+    trigger.setAttribute('aria-expanded','true');
+    menu.querySelector('[aria-selected=true]')?.focus();
+  }
+  trigger.addEventListener('click',()=>{
+    if(menu.hidden)open();else close();
+  });
+  items.forEach(btn=>btn.addEventListener('click',()=>{
+    select.value=btn.dataset.lang;
+    select.dispatchEvent(new Event('change',{bubbles:true}));
+    sync();close();trigger.focus();
+  }));
+  document.addEventListener('click',event=>{
+    if(!wrapper.contains(event.target))close();
+  });
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&!menu.hidden){close();trigger.focus();}
+    if(!menu.hidden&&(event.key==='ArrowDown'||event.key==='ArrowUp')){
+      event.preventDefault();
+      const index=items.indexOf(document.activeElement);
+      const delta=event.key==='ArrowDown'?1:-1;
+      items[(index+delta+items.length)%items.length].focus();
+    }
+  });
+  select.addEventListener('change',sync);
+  sync();
 })();
 </script>
 </body></html>
