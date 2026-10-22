@@ -1,0 +1,94 @@
+name: Photo Studio - Clean and Finish
+
+on:
+  push:
+    paths:
+      - '.github/workflows/clean-photo-studio.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  finish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+
+      - name: Apply prepared fixes and clean formatting
+        shell: bash
+        run: |
+          python - <<'PY'
+          import ast
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          previous = Path('.github/workflows/finish-photo-studio.yml')
+          lines = previous.read_text(encoding='utf-8').splitlines()
+          markers = [i for i, s in enumerate(lines) if s.strip() == "python - <<'PY'"]
+          if len(markers) != 1:
+              raise RuntimeError('Previous prepared fixes not found')
+          start = markers[0]
+          end = next(i for i in range(start+1, len(lines)) if lines[i].strip() == 'PY')
+          program = '\n'.join(
+              s[10:] if s.startswith('          ') else s
+              for s in lines[start+1:end]
+          ) + '\n'
+          ast.parse(program, filename='apply_previous_fixes.py')
+          patch = Path('apply_previous_fixes.py')
+          patch.write_text(program, encoding='utf-8')
+          try:
+              subprocess.run([sys.executable, str(patch)], check=True)
+          finally:
+              patch.unlink(missing_ok=True)
+
+          for name in ('PhotoStudio/web/index.html', 'PhotoStudio/web/runtime.js'):
+              file = Path(name)
+              text = file.read_text(encoding='utf-8')
+              cleaned = '\n'.join(line.rstrip() for line in text.splitlines()) + '\n'
+              file.write_text(cleaned, encoding='utf-8')
+          print('Repairs applied, trailing whitespace removed.')
+          PY
+
+      - name: Verify corrected files
+        shell: bash
+        run: |
+          python -m py_compile PhotoStudio/app.py PhotoStudio/native_main.py
+          node --check PhotoStudio/web/runtime.js
+          git diff --check
+
+      - name: Save corrected source files
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoStudio-Corrected-Sources
+          path: |
+            PhotoStudio/web/index.html
+            PhotoStudio/web/runtime.js
+            PhotoStudio/app.py
+            PhotoStudio/native_main.py
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Commit corrected application
+        shell: bash
+        run: |
+          git config user.name "Photo Studio Build"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add PhotoStudio/web/index.html PhotoStudio/web/runtime.js PhotoStudio/app.py PhotoStudio/native_main.py
+          if ! git diff --cached --quiet; then
+            git commit -m "Finish Photo Studio queue, crop, language and folder improvements"
+            git push origin HEAD:main
+          fi
+
+      - name: Start native installers
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run native-release.yml --ref main
+          echo "Requested macOS DMG and Windows EXE builds."
+  
