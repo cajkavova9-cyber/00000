@@ -1,0 +1,403 @@
+name: Photo Studio - Crop, Queue and Language Fix
+
+on:
+  push:
+    paths:
+      - '.github/workflows/polish-photo-studio.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  update-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out current Photo Studio
+        uses: actions/checkout@v4
+
+      - name: Apply interface and desktop fixes
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          html_file = Path('PhotoStudio/web/index.html')
+          runtime_file = Path('PhotoStudio/web/runtime.js')
+          app_file = Path('PhotoStudio/app.py')
+          native_file = Path('PhotoStudio/native_main.py')
+
+          html = html_file.read_text(encoding='utf-8')
+          runtime = runtime_file.read_text(encoding='utf-8')
+          app = app_file.read_text(encoding='utf-8')
+          native = native_file.read_text(encoding='utf-8')
+
+          def once(text, old, new, label):
+              count = text.count(old)
+              if count != 1:
+                  raise RuntimeError(f'{label}: expected one match, got {count}')
+              return text.replace(old, new, 1)
+
+          # Keep all animations, but make scrolling queues stable.
+          start = html.index(' function renderFaceQueue(key,id){')
+          end = html.index(' function renderFiles(key,id){', start)
+
+          queue_js = r"""
+          function renderFaceQueue(key,id){
+            const root=$('#'+id),list=selected[key];
+            const previousScroll=root.scrollTop;
+            root.replaceChildren();
+            root.style.display='block';
+            root.style.position='relative';
+            root._psDraw=null;
+            if(!list.length){
+              const placeholder=document.createElement('div');
+              placeholder.className='empty-state';
+              placeholder.textContent='Файлы ещё не выбраны';
+              root.append(placeholder);
+              return;
+            }
+            const stride=66;
+            const spacer=document.createElement('div');
+            spacer.style.height=(list.length*stride)+'px';
+            spacer.style.pointerEvents='none';
+            const layer=document.createElement('div');
+            layer.className='face-virtual-layer';
+            layer.style.cssText='position:absolute;left:0;right:0;top:0;height:0;pointer-events:none';
+            root.append(spacer,layer);
+            root.scrollTop=Math.min(previousScroll,Math.max(0,list.length*stride-root.clientHeight));
+            const mounted=new Map();
+            function draw(){
+              if(!layer.isConnected)return;
+              const first=Math.max(0,Math.floor(root.scrollTop/stride)-3);
+              const last=Math.min(list.length,Math.ceil((root.scrollTop+root.clientHeight)/stride)+4);
+              for(const [index,row] of mounted){
+                if(index<first||index>=last){
+                  row.remove();
+                  mounted.delete(index);
+                }
+              }
+              for(let i=first;i<last;i++){
+                if(mounted.has(i))continue;
+                const file=list[i];
+                if(!file)continue;
+                const row=fileRow(file,()=>{
+                  selected[key].splice(i,1);
+                  if(!Object.values(selected).some(arr=>arr.includes(file)))revokeFile(file);
+                  renderFiles(key,id);
+                  updateCount();
+                  if(key==='sort')updateSort();
+                  if(key==='crop'){
+                    $('#cropBatchSummary').textContent='В очереди: '+selected.crop.length+' фотографий · рамка применяется ко всем';
+                    $('#cropBatchList').classList.toggle('has-files',selected.crop.length>0);
+                  }
+                });
+                row.style.position='absolute';
+                row.style.left='0';
+                row.style.right='0';
+                row.style.top=(i*stride)+'px';
+                row.style.height='58px';
+                row.style.pointerEvents='auto';
+                layer.append(row);
+                mounted.set(i,row);
+              }
+            }
+            root._psDraw=draw;
+            draw();
+            if(!root._psAttached){
+              root._psAttached=true;
+              root.addEventListener('scroll',()=>{
+                if(root._psRaf)return;
+                root._psRaf=requestAnimationFrame(()=>{
+                  root._psRaf=null;
+                  root._psDraw?.();
+                });
+              },{passive:true});
+            }
+          }
+          """
+          html = html[:start] + queue_js + html[end:]
+
+          # Keep the image and selection aligned; hide empty crop guides.
+          html = once(
+              html,
+              'cropImg.onload=()=>{chooseRatio(cropRatio)};',
+              "cropImg.onload=()=>{cropArea.classList.add('has-crop-photo');chooseRatio(cropRatio)};",
+              'Show crop guide only with an image'
+          )
+          html = once(
+              html,
+              "cropImg.removeAttribute('src');cropImg.style.display='none';updateCropBatch();",
+              "cropImg.removeAttribute('src');cropImg.style.display='none';"
+              "cropArea.classList.remove('has-crop-photo');"
+              "cropRatio='free';selection={x:0,y:0,w:1,h:1};"
+              "chooseRatio('free');updateCropBatch();",
+              'Reset crop after completion'
+          )
+
+          # Do not overlay the saved preview onto the original photograph.
+          preview_line = "else showPreview(id,kind).catch(()=>{});"
+          completion = """
+          else if(kind==='crop'){
+            const oldPreview=document.getElementById('psPreviewResult');
+            if(oldPreview){
+              try{URL.revokeObjectURL(oldPreview.src)}catch(_){}
+              oldPreview.remove();
+            }
+            document.getElementById('cropClearBatch')?.click();
+          }else showPreview(id,kind).catch(()=>{});
+          """
+          html = once(html, preview_line, completion, 'Crop completion in HTML')
+          runtime = once(runtime, preview_line, completion, 'Crop completion in runtime')
+
+          old_lang = (
+              '<label aria-label="Язык интерфейса" class="ps-language-wrap">'
+              '<span class="ps-lang-glyph">A文</span>'
+              '<select aria-label="Язык интерфейса" id="psLanguage">'
+              '<option value="ru">RU</option><option value="en">EN</option>'
+              '<option value="uk">UA</option></select></label>'
+          )
+          new_lang = (
+              '<div aria-label="Язык интерфейса" class="ps-language-wrap" id="psLanguageWidget">'
+              '<span class="ps-lang-glyph">A文</span>'
+              '<select aria-label="Язык интерфейса" id="psLanguage" tabindex="-1" aria-hidden="true">'
+              '<option value="ru">RU</option><option value="en">EN</option>'
+              '<option value="uk">UA</option></select>'
+              '<button id="psLanguageButton" type="button" aria-haspopup="listbox" '
+              'aria-expanded="false">RU <span aria-hidden="true">⌄</span></button>'
+              '<div id="psLanguageMenu" role="listbox" aria-label="Выбор языка" hidden>'
+              '<button type="button" role="option" data-lang="ru">RU — Русский</button>'
+              '<button type="button" role="option" data-lang="en">EN — English</button>'
+              '<button type="button" role="option" data-lang="uk">UA — Українська</button>'
+              '</div></div>'
+          )
+          html = once(html, old_lang, new_lang, 'Custom language selector')
+
+          css = r"""
+          <style id="ps-interface-polish">
+          #faceTargetList,#cropBatchList,#compressList,#sortFileList,#homeFileList{
+            overscroll-behavior-y:auto!important;
+            scroll-behavior:auto!important;
+            overflow-anchor:none;
+            scrollbar-gutter:stable;
+          }
+          #faceTargetList .face-virtual-layer,
+          #cropBatchList .face-virtual-layer,
+          #compressList .face-virtual-layer,
+          #sortFileList .face-virtual-layer,
+          #homeFileList .face-virtual-layer{
+            overflow:visible;
+          }
+          #cropArea:not(.has-crop-photo) #cropGuide{display:none!important}
+          #cropArea:not(.has-crop-photo) #cropImage{display:none!important}
+          #cropArea #psPreviewResult{display:none!important}
+          .ps-language-wrap{position:relative;overflow:visible}
+          #psLanguage{position:absolute!important;opacity:0!important;
+            width:1px!important;height:1px!important;pointer-events:none!important}
+          #psLanguageButton{padding:3px 3px 3px 0;border:0;background:transparent;
+            color:#f2f7ff;font-weight:750;cursor:pointer;display:flex;gap:7px;
+            align-items:center;transition:color .22s ease}
+          #psLanguageButton:hover{color:var(--c2)}
+          #psLanguageButton span{font-size:14px;color:var(--c2)}
+          #psLanguageMenu{position:absolute;z-index:9000;top:calc(100% + 9px);
+            right:0;width:194px;padding:7px;background:#101d30;
+            border:1px solid #45658c;border-radius:13px;
+            box-shadow:0 19px 55px #0009;
+            animation:ps-language-in .22s cubic-bezier(.2,.9,.2,1) both}
+          #psLanguageMenu[hidden]{display:none!important}
+          #psLanguageMenu button{display:block;width:100%;text-align:left;
+            padding:11px 12px;border:0;border-radius:9px;
+            background:transparent;color:#cbd9ee;font-size:12px;cursor:pointer;
+            transition:background .22s ease,color .22s ease}
+          #psLanguageMenu button:hover,#psLanguageMenu button[aria-selected=true]{
+            background:color-mix(in srgb,var(--c1),transparent 78%);color:white}
+          @keyframes ps-language-in{
+            from{opacity:0;transform:translateY(-7px) scale(.98)}
+            to{opacity:1;transform:translateY(0) scale(1)}
+          }
+          </style>
+          """
+          html = once(html, '</head>', css+'</head>', 'Polished interface styles')
+
+          lang_js = r"""
+          <script id="ps-polished-language-selector">
+          (() => {
+            const select=document.getElementById('psLanguage');
+            const wrapper=document.getElementById('psLanguageWidget');
+            const trigger=document.getElementById('psLanguageButton');
+            const menu=document.getElementById('psLanguageMenu');
+            if(!select||!wrapper||!trigger||!menu)return;
+            const items=[...menu.querySelectorAll('[data-lang]')];
+            function sync(){
+              trigger.firstChild.textContent=select.value.toUpperCase()+' ';
+              items.forEach(btn=>{
+                btn.setAttribute('aria-selected',String(btn.dataset.lang===select.value));
+              });
+            }
+            function close(){
+              menu.hidden=true;
+              trigger.setAttribute('aria-expanded','false');
+            }
+            function open(){
+              menu.hidden=false;
+              trigger.setAttribute('aria-expanded','true');
+              menu.querySelector('[aria-selected=true]')?.focus();
+            }
+            trigger.addEventListener('click',()=>{
+              if(menu.hidden)open();else close();
+            });
+            items.forEach(btn=>btn.addEventListener('click',()=>{
+              select.value=btn.dataset.lang;
+              select.dispatchEvent(new Event('change',{bubbles:true}));
+              sync();close();trigger.focus();
+            }));
+            document.addEventListener('click',event=>{
+              if(!wrapper.contains(event.target))close();
+            });
+            document.addEventListener('keydown',event=>{
+              if(event.key==='Escape'&&!menu.hidden){close();trigger.focus();}
+              if(!menu.hidden&&(event.key==='ArrowDown'||event.key==='ArrowUp')){
+                event.preventDefault();
+                const index=items.indexOf(document.activeElement);
+                const delta=event.key==='ArrowDown'?1:-1;
+                items[(index+delta+items.length)%items.length].focus();
+              }
+            });
+            select.addEventListener('change',sync);
+            sync();
+          })();
+          </script>
+          """
+          html = once(html, '</body>', lang_js+'</body>', 'Language menu behavior')
+
+          # Remove the AppleScript subprocess from the native desktop
+          # output-folder path. Instead invoke Qt in the GUI thread.
+          app = once(
+              app,
+              'selected = choose_folder_native(initial)',
+              "picker = getattr(self, 'native_folder_picker', None)\n"
+              "        selected = picker(initial) if callable(picker) else choose_folder_native(initial)",
+              'Qt output folder integration'
+          )
+
+          native = once(
+              native,
+              'from PySide6.QtCore import Qt, QUrl, QStandardPaths',
+              'from PySide6.QtCore import Qt, QUrl, QStandardPaths, QObject, Signal, Slot',
+              'Qt Signals'
+          )
+          native = once(
+              native,
+              'from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox',
+              'from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QFileDialog',
+              'Qt Folder Dialog'
+          )
+          marker = '    server = ThreadingHTTPServer((\'127.0.0.1\', 0), Handler)'
+          bridge = """
+    class NativeFolderChooser(QObject):
+        requested = Signal(object)
+
+        def __init__(self, parent):
+            super().__init__(parent)
+            self.dialog = QFileDialog(parent)
+            self.dialog.setWindowTitle('Photo Studio — Папка результатов')
+            self.dialog.setFileMode(QFileDialog.FileMode.Directory)
+            self.dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
+            self.requested.connect(self._show, Qt.ConnectionType.QueuedConnection)
+
+        @Slot(object)
+        def _show(self, request):
+            try:
+                self.dialog.setDirectory(str(request['initial']))
+                if self.dialog.exec():
+                    files = self.dialog.selectedFiles()
+                    request['path'] = files[0] if files else None
+            except Exception as exc:
+                request['error'] = str(exc)
+            finally:
+                request['finished'].set()
+
+        def choose(self, initial):
+            request = {
+                'initial': initial,
+                'finished': threading.Event(),
+                'path': None,
+                'error': None,
+            }
+            self.requested.emit(request)
+            if not request['finished'].wait(180):
+                raise TimeoutError('The folder picker did not respond')
+            if request['error']:
+                raise RuntimeError(request['error'])
+            return Path(request['path']) if request['path'] else None
+
+"""
+          native = once(native, marker, bridge+marker, 'Qt folder chooser bridge')
+          native = once(
+              native,
+              '    window = QMainWindow()\n',
+              '    window = QMainWindow()\n'
+              '    folder_chooser = NativeFolderChooser(window)\n'
+              '    server.studio.native_folder_picker = folder_chooser.choose\n',
+              'Install GUI folder chooser'
+          )
+
+          # Guard the parts of the application the user wants preserved.
+          assert html.count('@keyframes') >= 35, 'Original animations disappeared'
+          assert "motion='max'" in html, 'MAX motion missing'
+          assert 'const effects=[' in html, 'Original effect laboratory removed'
+          assert "id='ps-desktop-fixes'" in html or 'id="ps-desktop-fixes"' in html
+          assert 'psLanguageMenu' in html
+          assert 'psLanguageButton' in html
+          assert 'NativeFolderChooser' in native
+          assert "kind==='crop'" in runtime
+          assert 'cropArea.classList.remove' in html
+          for kind in ('face','crop','compress','sort'):
+              assert f'id="page-{kind}"' in html, kind+' tool missing'
+          html_file.write_text(html,encoding='utf-8')
+          runtime_file.write_text(runtime,encoding='utf-8')
+          app_file.write_text(app,encoding='utf-8')
+          native_file.write_text(native,encoding='utf-8')
+          print('Photo Studio: interface, Crop, queues, language and folder fixes applied.')
+          PY
+
+      - name: Verify Python and JavaScript syntax
+        shell: bash
+        run: |
+          python -m py_compile PhotoStudio/app.py PhotoStudio/native_main.py
+          node --check PhotoStudio/web/runtime.js
+          git diff --check
+
+      - name: Save corrected source files
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoStudio-Interface-Fixed-Source
+          path: |
+            PhotoStudio/web/index.html
+            PhotoStudio/web/runtime.js
+            PhotoStudio/app.py
+            PhotoStudio/native_main.py
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Commit corrected source
+        shell: bash
+        run: |
+          git config user.name "Photo Studio Build"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add PhotoStudio/web/index.html PhotoStudio/web/runtime.js PhotoStudio/app.py PhotoStudio/native_main.py
+          if ! git diff --cached --quiet; then
+            git commit -m "Improve photo queues, reset Crop, polish language selector and Qt folder dialogs"
+            git push origin HEAD:main
+          fi
+
+      - name: Start Mac and Windows native builds
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run native-release.yml --ref main
+          echo "Native desktop builds started."
+  
