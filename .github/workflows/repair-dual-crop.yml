@@ -1,0 +1,147 @@
+name: Photo Studio - Repair Dual Crop
+
+on:
+  push:
+    paths:
+      - '.github/workflows/repair-dual-crop.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    name: Repair dual orientation crop and verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Apply corrected Crop upgrade
+        shell: bash
+        run: |
+          python - <<'PY'
+          import ast
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          old = Path('.github/workflows/smart-crop-orientations.yml')
+          lines = old.read_text(encoding='utf-8').splitlines()
+          starts = [i for i, line in enumerate(lines) if line.strip() == "python - <<'PY'"]
+          if len(starts) != 1:
+              raise RuntimeError('Prepared Crop script not found')
+          start = starts[0]
+          end = next(i for i in range(start+1, len(lines)) if lines[i].strip() == 'PY')
+          script = '\n'.join(
+              line[10:] if line.startswith('          ') else line
+              for line in lines[start+1:end]
+          ) + '\n'
+
+          fixes = [
+              ("  const cropFree=$('#cropFree');", " const cropFree=$('#cropFree');", 1),
+              ('    window.PhotoStudioCropSelection', '   window.PhotoStudioCropSelection', 2),
+              ('    if(!cropImg.naturalWidth', '   if(!cropImg.naturalWidth', 1),
+              ('    cropImg.onload', '   cropImg.onload', 2),
+              ("assert 'id=\"psCropPreviewPanel\"' in html",
+               "assert 'cropPreviewPanel.id' in html", 1),
+          ]
+          for old_text, new_text, expected_count in fixes:
+              actual_count = script.count(old_text)
+              if actual_count != expected_count:
+                  raise RuntimeError(
+                      f'Crop patch changed: expected {expected_count} instances '
+                      f'of {old_text!r}, found {actual_count}'
+                  )
+              script = script.replace(old_text, new_text)
+
+          ast.parse(script, filename='apply_dual_crop.py')
+          patch = Path('apply_dual_crop.py')
+          try:
+              patch.write_text(script, encoding='utf-8')
+              subprocess.run([sys.executable, str(patch)], check=True)
+          finally:
+              patch.unlink(missing_ok=True)
+
+          test_start = next(
+              i for i, line in enumerate(lines)
+              if "cat > PhotoStudio/tests/test_crop_orientations.py <<'PYTEST'" in line
+          )
+          test_end = next(
+              i for i in range(test_start+1, len(lines))
+              if lines[i].strip() == 'PYTEST'
+          )
+          test_source = '\n'.join(
+              line[10:] if line.startswith('          ') else line
+              for line in lines[test_start+1:test_end]
+          ) + '\n'
+          ast.parse(test_source, filename='test_crop_orientations.py')
+          Path('PhotoStudio/tests/test_crop_orientations.py').write_text(
+              test_source, encoding='utf-8'
+          )
+
+          for name in (
+              'PhotoStudio/web/index.html',
+              'PhotoStudio/web/runtime.js',
+              'PhotoStudio/app.py',
+              'PhotoStudio/tests/test_crop_orientations.py',
+          ):
+              file = Path(name)
+              content = file.read_text(encoding='utf-8')
+              file.write_text(
+                  '\n'.join(line.rstrip() for line in content.splitlines())+'\n',
+                  encoding='utf-8'
+              )
+
+          html = Path('PhotoStudio/web/index.html').read_text(encoding='utf-8')
+          assert 'psCropOrientationTabs' in html
+          assert 'psCropPreviewLandscape' in html
+          assert 'psCropPreviewPortrait' in html
+          assert html.count('@keyframes') >= 35
+          print('Dual Crop repair applied.')
+          PY
+
+      - name: Check Python and JavaScript
+        shell: bash
+        run: |
+          python -m py_compile PhotoStudio/app.py
+          node --check PhotoStudio/web/runtime.js
+          git diff --check
+
+      - name: Test horizontal and vertical crop
+        shell: bash
+        run: |
+          python -m pip install --quiet pillow
+          PYTHONUTF8=1 PYTHONPATH=PhotoStudio python -m unittest discover -s PhotoStudio/tests -p test_crop_orientations.py -v
+
+      - name: Upload verified sources
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoStudio-Dual-Crop-Verified-Source
+          path: |
+            PhotoStudio/web/index.html
+            PhotoStudio/web/runtime.js
+            PhotoStudio/app.py
+            PhotoStudio/tests/test_crop_orientations.py
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Commit corrected Photo Studio
+        shell: bash
+        run: |
+          git config user.name "Photo Studio Build"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add PhotoStudio/web/index.html PhotoStudio/web/runtime.js
+          git add PhotoStudio/app.py PhotoStudio/tests/test_crop_orientations.py
+          if ! git diff --cached --quiet; then
+            git commit -m "Restore separate landscape portrait crop previews"
+            git push origin HEAD:main
+          fi
+
+      - name: Confirm automatic native build trigger
+        shell: bash
+        run: |
+          echo "Photo Studio native builds are triggered by the source commit."
+          echo "Check the separate native-release.yml run in GitHub Actions."
+  
