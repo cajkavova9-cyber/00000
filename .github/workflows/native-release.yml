@@ -1,3 +1,4 @@
+
 name: Photo Studio 8 — macOS Apple Silicon and Windows
 
 on:
@@ -18,7 +19,7 @@ env:
 jobs:
   macos-apple-silicon:
     name: macOS Apple Silicon (arm64)
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 55
     steps:
       - name: Check out source
@@ -146,6 +147,7 @@ jobs:
           path: artifacts/PhotoStudio-macOS.dmg
           if-no-files-found: error
           retention-days: 14
+
   windows:
     name: Windows 64-bit installer
     runs-on: windows-2022
