@@ -1,0 +1,344 @@
+
+name: Photo Studio 8 - Quality Repair Candidate
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    name: Repair and regression tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pillow pytest beautifulsoup4 playwright
+
+      - name: Apply guarded repairs
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          root = Path('PhotoStudio')
+
+          def change(text, before, after, label):
+              count = text.count(before)
+              if count != 1:
+                  raise RuntimeError(
+                      f'{label}: expected exactly one match, found {count}'
+                  )
+              return text.replace(before, after, 1)
+
+          # 1. Sidebar and language selector
+          path = root / 'web/index.html'
+          html = path.read_text(encoding='utf-8')
+
+          lines = html.splitlines(keepends=True)
+          brand = [
+              index for index, line in enumerate(lines)
+              if line.startswith('<div class="brand">')
+          ]
+          assert len(brand) == 1, 'Brand structure changed'
+          del lines[brand[0]]
+          html = ''.join(lines)
+
+          html = change(
+              html,
+              'RU <span aria-hidden="true">⌄</span></button>',
+              'RU</button>',
+              'Language selector'
+          )
+          html = change(
+              html,
+              '</head>',
+              '<style id="ps-clean-sidebar">'
+              '.rail{padding-top:10px!important}'
+              '</style></head>',
+              'Sidebar spacing'
+          )
+          path.write_text(html, encoding='utf-8')
+
+          # 2. Browser polling resilience
+          path = root / 'web/runtime.js'
+          runtime = path.read_text(encoding='utf-8')
+
+          runtime = change(
+              runtime,
+              ' let currentJob=null, currentResult=null, authTimer=null, uploadController=null;',
+              ' let currentJob=null, currentResult=null, authTimer=null, uploadController=null;\n'
+              ' let pollFailures=0;',
+              'Polling state'
+          )
+          runtime = change(
+              runtime,
+              "     const p=await call('/api/jobs/'+id);",
+              "     const p=await call('/api/jobs/'+id);\n"
+              "     pollFailures=0;",
+              'Polling recovery'
+          )
+          runtime = change(
+              runtime,
+              "if(['queued','running'].includes(p.status))setTimeout(()=>poll(id,kind),350);",
+              "if(['queued','running'].includes(p.status))"
+              "setTimeout(()=>poll(id,kind),kind==='face'?1200:500);",
+              'Polling interval'
+          )
+          runtime = change(
+              runtime,
+              '   }catch(err){setBusy(false);notify(err.message,true)}\n }',
+              '''   }catch(err){
+             if(currentJob?.id!==id)return;
+             pollFailures++;
+             if(pollFailures===1 || pollFailures%12===0)
+               notify(tx(
+                 'Временно потеряна связь с приложением. Повторяем проверку.',
+                 'Connection interrupted. Retrying status check.',
+                 'Зв’язок із застосунком перервано. Повторюємо перевірку.'
+               ),true);
+             if(kind==='face')
+               setContent('#faceStatus',tx(
+                 'Проверяем соединение. Обработка может продолжаться.',
+                 'Reconnecting. Processing may still be running.',
+                 'Відновлюємо зв’язок. Обробка може тривати.'
+               ));
+             const delay=Math.min(12000,800*Math.pow(2,Math.min(4,pollFailures)));
+             setTimeout(()=>poll(id,kind),delay);
+           }
+         }''',
+              'Polling error handling'
+          )
+          path.write_text(runtime, encoding='utf-8')
+
+          # 3. Face Swap: slower external service must not
+          # be mistaken for a permanently frozen browser.
+          path = root / 'engine/facy_engine.py'
+          engine = path.read_text(encoding='utf-8')
+
+          engine = change(
+              engine,
+              'GENERATE_TIMEOUT_MS = 300_000',
+              'GENERATE_TIMEOUT_MS = 600_000',
+              'Generation timeout'
+          )
+          engine = change(
+              engine,
+              'DOWNLOAD_TIMEOUT_SECONDS = 240',
+              'DOWNLOAD_TIMEOUT_SECONDS = 900',
+              'Batch download timeout'
+          )
+          engine = change(
+              engine,
+              'STALL_SECONDS = 180  # protect the worker from stalled browser downloads',
+              'STALL_SECONDS = 720  # bounded wait for slow external downloads',
+              'Download watchdog'
+          )
+
+          # Record fully completed batches for diagnostics.
+          engine = change(
+              engine,
+              '                            completed += len(batch)\n',
+              '''                            completed += len(batch)
+                                  with (output / '.facy_completed_batches.log').open(
+                                      'a', encoding='utf-8'
+                                  ) as manifest:
+                                      manifest.write(f'{batch_idx},{offset},{len(batch)}\\\\n')
+                                      manifest.flush()
+                                      os.fsync(manifest.fileno())
+          '''.replace('\\\\n', '\\n' if False else '\\\\n'),
+              'Batch checkpoint'
+          )
+
+          # Never silently advance to the next batch when
+          # some results cannot be accounted for.
+          before = '''                        except FacyIncompleteBatch as exc:
+                                      completed += saved_this_batch
+                                      incomplete_batches.append((batch_idx, len(batch), saved_this_batch))
+                                      progress('progress', (completed, len(targets)))
+                                      _status(progress,
+                                          f"Пачка {batch_idx}: получено {saved_this_batch} из {len(batch)}. "
+                                          "Недостающие результаты Facy не подтвердил. "
+                                          "Все полученные изображения сохранены; "
+                                          "продолжаем следующую пачку.")'''
+
+          # Use line-based replacement with exact indentation
+          # from the current source, not a broad regex.
+          start = engine.index('                        except FacyIncompleteBatch as exc:')
+          end = engine.index('                        except Exception as exc:', start)
+          old_block = engine[start:end]
+          assert 'продолжаем следующую пачку' in old_block
+          assert 'completed += saved_this_batch' in old_block
+
+          new_block = '''                        except FacyIncompleteBatch as exc:
+                                  completed += saved_this_batch
+                                  progress('progress', (completed, len(targets)))
+                                  _status(progress,
+                                      f'Пачка {batch_idx}: сохранено {saved_this_batch} из {len(batch)}. '
+                                      'Неполная пачка. Следующие пачки не отправлены. '
+                                      'Проверь результаты перед повторным запуском. '
+                                      f'Причина: {exc}')
+                                  return (completed, len(targets))
+          '''
+
+          # The replacement blocks use normal Python source
+          # indentation after the leading YAML indentation.
+          new_block = '\n'.join(
+              line[:24] + line[34:] if line.startswith(' '*34)
+              else line
+              for line in new_block.splitlines()
+          ) + '\n'
+          engine = engine[:start] + new_block + engine[end:]
+
+          path.write_text(engine, encoding='utf-8')
+
+          # 4. Strict decimal MB, not MiB.
+          path = root / 'engine/size_limit_compress.py'
+          compressor = path.read_text(encoding='utf-8')
+          compressor = change(
+              compressor,
+              'limit = int(max_mb) * 1024 * 1024',
+              'limit = int(max_mb) * 1_000_000',
+              'Compression byte limit'
+          )
+          path.write_text(compressor, encoding='utf-8')
+
+          # Additional output validation at the application layer.
+          path = root / 'app.py'
+          backend = path.read_text(encoding='utf-8')
+          backend = change(
+              backend,
+              "                        dest = compress_file(upload.path, upload.name, dest_dir, request.get('maxMB', 2))",
+              """                        dest = compress_file(upload.path, upload.name, dest_dir, request.get('maxMB', 2))
+                                  if dest.stat().st_size > int(request.get('maxMB', 2)) * 1_000_000:
+                                      dest.unlink(missing_ok=True)
+                                      raise RuntimeError('Compression result exceeds selected byte limit')""",
+              'Compression output verification'
+          )
+          backend = backend.replace(
+              "                                  if dest.stat().st_size",
+              "                        if dest.stat().st_size"
+          ).replace(
+              "                                      dest.unlink(missing_ok=True)",
+              "                            dest.unlink(missing_ok=True)"
+          ).replace(
+              "                                      raise RuntimeError('Compression result exceeds selected byte limit')",
+              "                            raise RuntimeError('Compression result exceeds selected byte limit')"
+          )
+          path.write_text(backend, encoding='utf-8')
+
+          # 5. Future engine changes must trigger native builds.
+          path = Path('.github/workflows/native-release.yml')
+          workflow = path.read_text(encoding='utf-8')
+          workflow = change(
+              workflow,
+              "      - 'PhotoStudio/web/**'",
+              "      - 'PhotoStudio/web/**'\n"
+              "      - 'PhotoStudio/engine/**'\n"
+              "      - 'PhotoStudio/native_main.py'\n"
+              "      - 'packaging/**'",
+              'Native build source paths'
+          )
+          path.write_text(workflow, encoding='utf-8')
+          print('Guarded source changes applied')
+          PY
+
+      - name: Compile and validate
+        shell: bash
+        run: |
+          python -m compileall -q PhotoStudio
+          node --check PhotoStudio/web/runtime.js
+          git diff --check
+          python - <<'PY'
+          from pathlib import Path
+          from bs4 import BeautifulSoup
+
+          html = Path('PhotoStudio/web/index.html').read_text()
+          soup = BeautifulSoup(html, 'html.parser')
+          assert soup.select_one('.rail') is not None
+          assert soup.select_one('.rail .brand') is None
+          assert soup.select_one('#psLanguageButton')
+          assert soup.select_one('#psLanguageMenu')
+          assert '⌄</span></button>' not in html
+          print('Sidebar and language controls: PASS')
+          PY
+
+      - name: Run backend regression suite
+        working-directory: PhotoStudio
+        shell: bash
+        run: |
+          python -m pytest tests -q -k 'not test_browser_queue_and_folder'
+
+      - name: Test compression boundaries
+        working-directory: PhotoStudio
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          import tempfile
+          from pathlib import Path
+          from PIL import Image
+          from engine.size_limit_compress import compress_file
+
+          with tempfile.TemporaryDirectory() as tmp:
+              root = Path(tmp)
+              image = Image.frombytes('RGB',(1450,1250),os.urandom(1450*1250*3))
+              src = root / 'sample.png'
+              image.save(src)
+              old_size = src.stat().st_size
+              assert old_size > 5_000_000
+
+              for mb in (1,2,3,4,5):
+                  folder = root / f'out_{mb}'
+                  result = compress_file(src,src.name,folder,mb)
+                  actual = result.stat().st_size
+                  assert 0 < actual <= mb*1_000_000,(mb,actual)
+                  with Image.open(result) as check:
+                      check.verify()
+                  assert src.stat().st_size == old_size
+                  print(f'PASS {mb} MB: {actual:,} bytes')
+          PY
+
+      - name: Save corrected source artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoStudio-Quality-Repair-Candidate
+          path: |
+            PhotoStudio/app.py
+            PhotoStudio/engine/facy_engine.py
+            PhotoStudio/engine/size_limit_compress.py
+            PhotoStudio/web/index.html
+            PhotoStudio/web/runtime.js
+            .github/workflows/native-release.yml
+          retention-days: 14
+
+      - name: Commit to separate review branch
+        shell: bash
+        run: |
+          git config user.name "Photo Studio QA"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          BRANCH="fix/photostudio-quality-${{ github.run_id }}"
+          git switch -c "$BRANCH"
+          git add PhotoStudio/app.py
+          git add PhotoStudio/engine/facy_engine.py
+          git add PhotoStudio/engine/size_limit_compress.py
+          git add PhotoStudio/web/index.html
+          git add PhotoStudio/web/runtime.js
+          git add .github/workflows/native-release.yml
+
+          git commit -m "Prepare Photo Studio resilience and UI candidate"
+          git push --set-upstream origin "$BRANCH"
+          echo "Review branch: $BRANCH"
