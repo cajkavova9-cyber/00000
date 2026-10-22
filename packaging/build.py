@@ -18,6 +18,7 @@ os.chdir(app)
 args = [sys.executable, '-m', 'PyInstaller', '--clean', '--noconfirm',
         '--name', 'PhotoStudio', '--onedir', '--windowed',
         '--collect-all', 'playwright',
+        '--hidden-import', 'engine.size_limit_compress',
         '--hidden-import', 'engine.facy_process',
         '--hidden-import', 'engine.facy_login_process',
         '--hidden-import', 'engine.facy_engine',

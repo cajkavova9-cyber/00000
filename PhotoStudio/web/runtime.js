@@ -170,7 +170,7 @@ else if(kind==='crop'){
     return create('crop',['crop'],{ratio:active?.dataset.ratio||'1:1',zoom:Number($('#cropZoom').value),cropRect:{...window.PhotoStudioCropSelection}})},
   compressDemo:()=>{
     const active=$$('#formatTabs button').find(b=>b.classList.contains('active'));
-    return create('compress',['compress'],{format:active?.textContent?.trim()||'WEBP',quality:Number($('#quality').value)})},
+    return create('compress',['compress'],{maxMB:Number(document.querySelector('#compressLimits .active')?.dataset.maxMb||2)})},
   sortPreview:()=>create('sort',['sort'],{perFolder:Number($('#perFolder').value)}),
   shuffleDo:()=>create('shuffle',['shuffle'],{withinFolders:!!$$('#shuffleModes button').find(b=>b.classList.contains('active')&&b.dataset.mode==='folders')})
  };

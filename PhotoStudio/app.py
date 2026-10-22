@@ -388,7 +388,10 @@ class Studio:
                             parent = Path(rel).parent
                             if str(parent) != '.':
                                 dest_dir /= parent
-                    if kind in ('shuffle', 'sort'):
+                    if kind == 'compress':
+                        from engine.size_limit_compress import compress_file
+                        dest = compress_file(upload.path, upload.name, dest_dir, request.get('maxMB', 2))
+                    elif kind in ('shuffle', 'sort'):
                         dest = unique_path(dest_dir, f'{i+1:06d}_{upload.name}' if kind == 'shuffle' else upload.name)
                         from engine.batch_files import safe_copy
                         safe_copy(upload.path, dest)
