@@ -400,8 +400,17 @@ class Studio:
                             Image.MAX_IMAGE_PIXELS = 120_000_000
                             img = ImageOps.exif_transpose(original)
                             if kind == 'crop':
-                                selection = request.get('cropRect')
                                 w, h = img.size
+                                selection = request.get('cropRect')
+                                orientations = request.get('cropRects')
+                                if isinstance(orientations, dict):
+                                    orient = 'portrait' if h > w else 'landscape'
+                                    selection = orientations.get(orient, selection)
+                                    orientation_ratios = request.get('cropRatios')
+                                    if isinstance(orientation_ratios, dict):
+                                        ratio = str(orientation_ratios.get(orient, 'free'))
+                                    else:
+                                        ratio = 'free'
                                 if isinstance(selection, dict):
                                     coords = [selection.get(k) for k in ('x','y','w','h')]
                                     if not all(isinstance(v,(int,float)) and not isinstance(v,bool) and 0 <= v <= 1 for v in coords):

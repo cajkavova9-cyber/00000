@@ -176,7 +176,7 @@ else if(kind==='crop'){
   faceRun:()=>create('face',['faceSource','faceTarget']),
   cropDemo:()=>{
     const active=$$('#cropRatios button').find(b=>b.classList.contains('active'));
-    return create('crop',['crop'],{ratio:active?.dataset.ratio||'1:1',zoom:Number($('#cropZoom').value),cropRect:{...window.PhotoStudioCropSelection}})},
+    return create('crop',['crop'],{ratio:'free',cropRect:{...window.PhotoStudioCropSelection},cropRects:window.PhotoStudioCropRects,cropRatios:window.PhotoStudioCropRatios})},
   compressDemo:()=>{
     const active=$$('#formatTabs button').find(b=>b.classList.contains('active'));
     return create('compress',['compress'],{maxMB:Number(document.querySelector('#compressLimits .active')?.dataset.maxMb||2)})},
