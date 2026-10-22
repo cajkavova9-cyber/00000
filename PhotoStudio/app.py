@@ -391,6 +391,10 @@ class Studio:
                     if kind == 'compress':
                         from engine.size_limit_compress import compress_file
                         dest = compress_file(upload.path, upload.name, dest_dir, request.get('maxMB', 2))
+                        limit_bytes = int(request.get('maxMB', 2)) * 1_000_000
+                        if dest.stat().st_size > limit_bytes:
+                            dest.unlink(missing_ok=True)
+                            raise RuntimeError('Compressed output exceeds the selected limit')
                     elif kind in ('shuffle', 'sort'):
                         dest = unique_path(dest_dir, f'{i+1:06d}_{upload.name}' if kind == 'shuffle' else upload.name)
                         from engine.batch_files import safe_copy

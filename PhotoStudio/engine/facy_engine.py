@@ -25,9 +25,9 @@ IMAGE_EXT = {'.png', '.jpg', '.jpeg', '.webp'}
 BATCH_SIZE = 20
 MAX_IMAGE_BYTES = 200 * 1024 * 1024
 MAX_BATCH_BYTES = 2 * 1024 * 1024 * 1024
-GENERATE_TIMEOUT_MS = 300_000
-DOWNLOAD_TIMEOUT_SECONDS = 240
-STALL_SECONDS = 180  # protect the worker from stalled browser downloads
+GENERATE_TIMEOUT_MS = 900_000
+DOWNLOAD_TIMEOUT_SECONDS = 1200
+STALL_SECONDS = 900  # bounded watchdog for abnormally slow downloads
 
 
 class FacyError(RuntimeError):
@@ -489,13 +489,12 @@ def _run_facy(source: Path, targets: list[Path], output: Path, state: dict,
                             return (completed, len(targets))
                         except FacyIncompleteBatch as exc:
                             completed += saved_this_batch
-                            incomplete_batches.append((batch_idx, len(batch), saved_this_batch))
                             progress('progress', (completed, len(targets)))
                             _status(progress,
-                                f"Пачка {batch_idx}: получено {saved_this_batch} из {len(batch)}. "
-                                "Недостающие результаты Facy не подтвердил. "
-                                "Все полученные изображения сохранены; "
-                                "продолжаем следующую пачку.")
+                                f'Пачка {batch_idx}: сохранено {saved_this_batch} из {len(batch)}. '
+                                'Следующие пачки не запущены, пока не проверены недостающие результаты. '
+                                f'Подробности: {exc}')
+                            return (completed, len(targets))
                         except Exception as exc:
                             raise FacyError(
                                 f'Пачка {batch_idx} остановлена: {exc}. '

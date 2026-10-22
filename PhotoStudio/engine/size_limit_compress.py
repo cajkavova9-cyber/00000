@@ -40,7 +40,7 @@ def _encode_lossless(image: Image.Image, icc: bytes | None) -> bytes:
 def compress_file(source, original_name, folder, max_mb):
     if isinstance(max_mb, bool) or str(max_mb) not in ('1', '2', '3', '4', '5'):
         raise ValueError('Select a maximum file size from 1 to 5 MB')
-    limit = int(max_mb) * 1024 * 1024
+    limit = int(max_mb) * 1_000_000
     source, folder = Path(source), Path(folder)
     folder.mkdir(parents=True, exist_ok=True)
 

@@ -6,6 +6,7 @@
  const chosen=window.PhotoStudioSelected||{home:[],faceSource:[],faceTarget:[],compress:[],sort:[],shuffle:[]};
  if(!chosen.crop)chosen.crop=[];
  let currentJob=null, currentResult=null, authTimer=null, uploadController=null;
+ let pollFailures=0;
  const inputMap={homeFiles:'home',faceSourceInput:'faceSource',faceTargetInput:'faceTarget',cropFile:'crop',compressFile:'compress',sortFiles:'sort',shuffleFiles:'shuffle',sortFolderInput:'sort',shuffleFolderInput:'shuffle'};
  const lng=()=>{try{return localStorage.getItem('photo.studio.language')||'ru'}catch(_){return document.getElementById('psLanguage')?.value||'ru'}};
  const tx=(ru,en,uk)=>lng()==='en'?en:lng()==='uk'?uk:ru;
@@ -98,12 +99,13 @@
  async function poll(id,kind){
    try{
      const p=await call('/api/jobs/'+id);
+     pollFailures=0;
      if(currentJob?.id!==id)return;
      currentJob=p;
      const percent=p.percent||0;stateProgress(kind,percent);
      if(kind==='face')setContent('#faceStatus',(p.status||'').toUpperCase()+' · '+(p.message||''));
      if(kind==='compress'&&p.status==='running')setContent('#compressPct',percent+'%');
-     if(['queued','running'].includes(p.status))setTimeout(()=>poll(id,kind),350);
+     if(['queued','running'].includes(p.status))setTimeout(()=>poll(id,kind),kind==='face'?1000:500);
      else{
        setBusy(false);
        if(p.status==='done'){
@@ -141,7 +143,20 @@ else if(kind==='crop'){
 } else if(p.status==='cancelled'){updateHomeStatus(tx('Отменено','Cancelled','Скасовано'));notify(tx('Задача отменена','Task cancelled','Завдання скасовано'))}
        else{updateHomeStatus(tx('Ошибка','Error','Помилка'));notify(p.error||p.message||'Operation failed',true)}
      }
-   }catch(err){setBusy(false);notify(err.message,true)}
+   }catch(err){
+     if(currentJob?.id!==id)return;
+     pollFailures++;
+     if(pollFailures===1 || pollFailures%15===0)
+       notify(tx('Временно нет связи с приложением. Проверка продолжится автоматически.',
+                 'Connection interrupted. Automatically retrying status updates.',
+                 'Зв’язок перервано. Перевірка стану продовжиться автоматично.'),true);
+     if(kind==='face')setContent('#faceStatus',tx(
+       'Проверяем соединение. Свапы могут продолжать обрабатываться.',
+       'Reconnecting. Face Swap may still be processing.',
+       'Відновлюємо зв’язок. Обробка облич може тривати.'));
+     const retryMs=Math.min(15000,1000*Math.pow(2,Math.min(pollFailures,4)));
+     setTimeout(()=>poll(id,kind),retryMs);
+   }
  }
 
  async function showPreview(id,kind){

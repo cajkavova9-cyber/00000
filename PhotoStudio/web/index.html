@@ -297,7 +297,7 @@ button:focus-visible,[tabindex]:focus-visible,input:focus-visible,select:focus-v
   box-shadow:0 0 18px color-mix(in srgb,var(--c1),transparent 85%)}
 @media(max-width:520px){.ps-crop-preview-pair{grid-template-columns:1fr}}
 </style>
-</head>
+<style id="ps-sidebar-tighten">.rail{padding-top:10px!important}</style></head>
 <body>
 <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg"><defs>
 <symbol id="i-aperture" viewbox="0 0 24 24"><circle cx="12" cy="12" r="9.5"></circle><circle cx="12" cy="12" r="3"></circle><path d="m11 2.7 4.7 6.8M21 8l-8.1 1.6M18 20l-4.6-6.2M4 18l7.7-3M4.1 6l4.6 5.6"></path></symbol>
@@ -328,7 +328,6 @@ button:focus-visible,[tabindex]:focus-visible,input:focus-visible,select:focus-v
 </defs></svg>
 <div aria-hidden="true" class="progress-top" id="topProgress"></div>
 <div class="app"><aside aria-label="Навигация" class="rail">
-<div class="brand"><div class="brand-mark"><svg class="s-icon lg"><use href="#i-aperture"></use></svg></div><div><b>PHOTO STUDIO</b><small>РАБОЧЕЕ ПРОСТРАНСТВО</small></div></div>
 <div class="nav-label">Рабочее пространство</div>
 <button class="nav active" data-page="home" style="--n-rgb:166,123,255" title="Рабочая область"><svg class="s-icon"><use href="#i-grid"></use></svg><span class="nav-text">Рабочая область</span><i class="n-dot"></i></button>
 <div class="nav-label">Инструменты</div>
@@ -339,7 +338,7 @@ button:focus-visible,[tabindex]:focus-visible,input:focus-visible,select:focus-v
 <div class="nav-label">Интерфейс</div>
 <button class="nav" data-page="motion" title="Внешний вид и анимации"><svg class="s-icon"><use href="#i-sliders"></use></svg><span class="nav-text">Внешний вид и анимации</span><i class="n-dot"></i></button>
 <div class="rail-end"><div class="tiny-row"><span class="online-dot"></span><span>Локальное приложение</span></div></div>
-</aside><div class="workspace"><header class="topbar"><div class="top-caption">PHOTO STUDIO <span>/</span> <span id="currentName">РАБОЧАЯ ОБЛАСТЬ</span></div><div class="top-actions"><div aria-label="Язык интерфейса" class="ps-language-wrap" id="psLanguageWidget"><span class="ps-lang-glyph">A文</span><select aria-label="Язык интерфейса" id="psLanguage" tabindex="-1" aria-hidden="true"><option value="ru">RU</option><option value="en">EN</option><option value="uk">UA</option></select><button id="psLanguageButton" type="button" aria-haspopup="listbox" aria-expanded="false">RU <span aria-hidden="true">⌄</span></button><div id="psLanguageMenu" role="listbox" aria-label="Выбор языка" hidden><button type="button" role="option" data-lang="ru">RU — Русский</button><button type="button" role="option" data-lang="en">EN — English</button><button type="button" role="option" data-lang="uk">UA — Українська</button></div></div><button aria-label="Открыть поиск" class="search-trigger" id="searchOpen"><span>Поиск инструментов...</span><span class="key">⌘ K</span></button><button aria-label="Показать уведомление" class="icon-btn" id="toastBtn" title="Уведомление"><svg class="s-icon"><use href="#i-info"></use></svg></button><button aria-label="Настройки" class="icon-btn" data-jump="motion" title="Внешний вид и анимации"><svg class="s-icon"><use href="#i-settings"></use></svg></button></div></header>
+</aside><div class="workspace"><header class="topbar"><div class="top-caption">PHOTO STUDIO <span>/</span> <span id="currentName">РАБОЧАЯ ОБЛАСТЬ</span></div><div class="top-actions"><div aria-label="Язык интерфейса" class="ps-language-wrap" id="psLanguageWidget"><span class="ps-lang-glyph">A文</span><select aria-label="Язык интерфейса" id="psLanguage" tabindex="-1" aria-hidden="true"><option value="ru">RU</option><option value="en">EN</option><option value="uk">UA</option></select><button id="psLanguageButton" type="button" aria-haspopup="listbox" aria-expanded="false">RU</button><div id="psLanguageMenu" role="listbox" aria-label="Выбор языка" hidden><button type="button" role="option" data-lang="ru">RU — Русский</button><button type="button" role="option" data-lang="en">EN — English</button><button type="button" role="option" data-lang="uk">UA — Українська</button></div></div><button aria-label="Открыть поиск" class="search-trigger" id="searchOpen"><span>Поиск инструментов...</span><span class="key">⌘ K</span></button><button aria-label="Показать уведомление" class="icon-btn" id="toastBtn" title="Уведомление"><svg class="s-icon"><use href="#i-info"></use></svg></button><button aria-label="Настройки" class="icon-btn" data-jump="motion" title="Внешний вид и анимации"><svg class="s-icon"><use href="#i-settings"></use></svg></button></div></header>
 <main>
 <section class="page active" data-title="РАБОЧАЯ ОБЛАСТЬ" id="page-home">
 <div class="workspace-heading">
