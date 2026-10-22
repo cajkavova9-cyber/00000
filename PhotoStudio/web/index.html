@@ -1139,7 +1139,7 @@ else if(kind==='crop'){
  }
  function apply(node){
     if(node.nodeType!==Node.TEXT_NODE)return;
-    const parent=node.parentElement;if(!parent||parent.closest('script,style,svg,code,pre,textarea,.files-list,.file-chip,.effect-visual,.command-results'))return;
+    const parent=node.parentElement;if(!parent||parent.closest('script,style,svg,code,pre,textarea,.files-list,.file-chip,.effect-visual,.command-results,#psLanguageButton,#psLanguageMenu'))return;
     let original=bases.get(node);
     if(original===undefined){ original=node.nodeValue;bases.set(node,original) }
     // Changed by application interaction? Capture new Russian originals.

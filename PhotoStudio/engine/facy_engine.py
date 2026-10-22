@@ -26,8 +26,8 @@ BATCH_SIZE = 20
 MAX_IMAGE_BYTES = 200 * 1024 * 1024
 MAX_BATCH_BYTES = 2 * 1024 * 1024 * 1024
 GENERATE_TIMEOUT_MS = 300_000
-DOWNLOAD_TIMEOUT_SECONDS = 120
-STALL_SECONDS = 90  # one single download may not take longer than this
+DOWNLOAD_TIMEOUT_SECONDS = 240
+STALL_SECONDS = 180  # protect the worker from stalled browser downloads
 
 
 class FacyError(RuntimeError):
@@ -435,11 +435,17 @@ def _run_facy(source: Path, targets: list[Path], output: Path, state: dict,
                     raise FacyError('Сессия Facy не принята. Войди заново внутри Photo Studio.')
                 page.locator('#sourceFileDropzone').wait_for(state='visible', timeout=30_000)
                 completed = 0
+                incomplete_batches = []
                 total_batches = (len(targets) + BATCH_SIZE - 1) // BATCH_SIZE
                 for batch_idx, offset in enumerate(range(0, len(targets), BATCH_SIZE), 1):
                     if stop.is_set():
                         break
                     batch = targets[offset:offset+BATCH_SIZE]
+                    saved_this_batch = 0
+                    def record_batch_progress(saved):
+                        nonlocal saved_this_batch
+                        saved_this_batch = saved
+                        progress('progress', (completed + saved, len(targets)))
                     _status(progress, f'Пачка {batch_idx}/{total_batches}: загружаем {len(batch)} фотографий…')
                     with tempfile.TemporaryDirectory(prefix=f'.facy_batch_{batch_idx:03d}_', dir=output) as staging_name:
                         staging = Path(staging_name)
@@ -467,7 +473,7 @@ def _run_facy(source: Path, targets: list[Path], output: Path, state: dict,
                                 timeout_seconds=download_timeout_seconds,
                                 on_status=lambda text: _status(progress, f'Пачка {batch_idx}: {text}'),
                                 output=output,
-                                on_saved=lambda saved: progress('progress', (completed + saved, len(targets))),
+                                on_saved=record_batch_progress,
                                 watchdog=watchdog,
                             )
                             if stop.is_set():
@@ -481,6 +487,15 @@ def _run_facy(source: Path, targets: list[Path], output: Path, state: dict,
                         except FacyCancelled:
                             _status(progress, f'Остановлено на пачке {batch_idx}; следующие не отправлялись.')
                             return (completed, len(targets))
+                        except FacyIncompleteBatch as exc:
+                            completed += saved_this_batch
+                            incomplete_batches.append((batch_idx, len(batch), saved_this_batch))
+                            progress('progress', (completed, len(targets)))
+                            _status(progress,
+                                f"Пачка {batch_idx}: получено {saved_this_batch} из {len(batch)}. "
+                                "Недостающие результаты Facy не подтвердил. "
+                                "Все полученные изображения сохранены; "
+                                "продолжаем следующую пачку.")
                         except Exception as exc:
                             raise FacyError(
                                 f'Пачка {batch_idx} остановлена: {exc}. '
@@ -489,8 +504,14 @@ def _run_facy(source: Path, targets: list[Path], output: Path, state: dict,
                             ) from exc
                     if offset + len(batch) < len(targets) and not stop.is_set():
                         # ONLY after the verified, fully committed previous batch.
-                        page.get_by_role('button', name='Start new swap').click()
-                        page.locator('#sourceFileDropzone').wait_for(state='visible', timeout=30_000)
+                        try:
+                            page.get_by_role('button', name='Start new swap').click(timeout=15_000)
+                            page.locator('#sourceFileDropzone').wait_for(state='visible', timeout=30_000)
+                        except Exception:
+                            page.goto(FACY_URL, wait_until='domcontentloaded', timeout=60_000)
+                            if _login_required(page):
+                                raise FacyError('Сессия Facy истекла. Войди заново.')
+                            page.locator('#sourceFileDropzone').wait_for(state='visible', timeout=30_000)
                 return (completed, len(targets))
             finally:
                 context.close()

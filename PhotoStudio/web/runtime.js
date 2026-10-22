@@ -129,7 +129,16 @@ else if(kind==='crop'){
   document.getElementById('cropClearBatch')?.click();
 }else showPreview(id,kind).catch(()=>{});
 
-       } else if(p.status==='cancelled'){updateHomeStatus(tx('Отменено','Cancelled','Скасовано'));notify(tx('Задача отменена','Task cancelled','Завдання скасовано'))}
+       } else if(p.status==='partial'){
+         currentResult=p.output;
+         updateHomeStatus(tx('Частично готово','Partially complete','Частково готово'),p.done+'/'+p.total);
+         setContent('#faceStatus',tx('ЧАСТИЧНО ГОТОВО','PARTIALLY DONE','ЧАСТКОВО ГОТОВО'));
+         setContent('#faceResultText',tx('Скачанные фото сохранены в папке результатов','Downloaded photos are saved in the results folder','Завантажені фото збережені у теці результатів'));
+         const resultButton=$('#faceResultOpen');
+         if(resultButton)resultButton.disabled=false;
+         if(p.output)showResultAction(p.output);
+         notify(tx('Facy сохранил не все результаты: ','Facy did not deliver every result: ','Facy зберіг не всі результати: ')+p.done+'/'+p.total,true);
+} else if(p.status==='cancelled'){updateHomeStatus(tx('Отменено','Cancelled','Скасовано'));notify(tx('Задача отменена','Task cancelled','Завдання скасовано'))}
        else{updateHomeStatus(tx('Ошибка','Error','Помилка'));notify(p.error||p.message||'Operation failed',true)}
      }
    }catch(err){setBusy(false);notify(err.message,true)}

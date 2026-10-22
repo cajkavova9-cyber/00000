@@ -494,7 +494,10 @@ class Studio:
         if code:
             raise RuntimeError(f'Facy returned error (code {code}); see status above.')
         if job.done != job.total:
-            raise RuntimeError(f'Facy returned {job.done} of {job.total} images.')
+            job.update(status='partial',
+                       message=f'Сохранено {job.done} из {job.total} результатов Facy. '
+                               'Остальные результаты сервис не предоставил.')
+            return
         job.update(status='done', message='Facy results saved')
 
     def cancel(self, identifier):
