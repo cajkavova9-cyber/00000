@@ -1,0 +1,89 @@
+name: Photo Studio - Apply Interface Fixes
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-interface-fixes.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-fixes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out Photo Studio
+        uses: actions/checkout@v4
+
+      - name: Extract and run the prepared fixes
+        shell: bash
+        run: |
+          python - <<'PY'
+          import ast
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          original = Path('.github/workflows/polish-photo-studio.yml')
+          if not original.is_file():
+              raise RuntimeError('Previous repair workflow not found')
+          lines = original.read_text(encoding='utf-8').splitlines()
+          begins = [i for i, line in enumerate(lines) if line.strip() == "python - <<'PY'"]
+          if len(begins) != 1:
+              raise RuntimeError('Could not locate the prepared Python fixes')
+          start = begins[0]
+          ends = [i for i in range(start+1, len(lines)) if lines[i].strip() == 'PY']
+          if not ends:
+              raise RuntimeError('Python fixes are incomplete')
+          end = ends[0]
+          body = []
+          for line in lines[start+1:end]:
+              if line.startswith('          '):
+                  body.append(line[10:])
+              elif not line.strip():
+                  body.append('')
+              else:
+                  # Restore the original indentation of the embedded
+                  # Python string used for the Qt folder picker.
+                  body.append(line)
+          program = '\n'.join(body) + '\n'
+          ast.parse(program, filename='photostudio_fixes.py')
+          script = Path('photostudio_fixes.py')
+          script.write_text(program, encoding='utf-8')
+          try:
+              subprocess.run([sys.executable, str(script)], check=True)
+          finally:
+              script.unlink(missing_ok=True)
+          print('Photo Studio interface fixes applied successfully')
+          PY
+
+      - name: Validate the new source code
+        shell: bash
+        run: |
+          python -m py_compile PhotoStudio/app.py PhotoStudio/native_main.py
+          node --check PhotoStudio/web/runtime.js
+          git diff --check
+
+      - name: Save corrected source files
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoStudio-New-Interface-Source
+          path: |
+            PhotoStudio/web/index.html
+            PhotoStudio/web/runtime.js
+            PhotoStudio/app.py
+            PhotoStudio/native_main.py
+          retention-days: 14
+
+      - name: Commit the corrected application
+        shell: bash
+        run: |
+          git config user.name "Photo Studio Build"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add PhotoStudio/web/index.html PhotoStudio/web/runtime.js PhotoStudio/app.py PhotoStudio/native_main.py
+          if ! git diff --cached --quiet; then
+            git commit -m "Improve photo queues, Crop reset, language selector and folder dialogs"
+            git push origin HEAD:main
+          fi
